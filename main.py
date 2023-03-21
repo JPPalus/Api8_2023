@@ -38,7 +38,7 @@ class HelloTriangle:
     Without the VAO, OpenGL just knows that you suck some bytes into some buffers. 
     """
     def get_vao(self):
-        vao = self._gl_context.vertex_array(self._shader_program, [(self._vbo, '3f', 'in_position')])
+        vao = self._gl_context.vertex_array(self._shader_program, [(self._vbo, '3f', 'position')])
         return vao
     
     """ 
