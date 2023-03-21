@@ -31,7 +31,12 @@ class HelloTriangle:
         vertex_data = np.array(vertex_data, dtype = 'f4') # 32-bit floating-point
         return vertex_data
     
-    """ Create a Vertex Array Object """
+    """ 
+    Create a Vertex Array Object, an OpenGL Object that stores the format of the vertex data as well as the Buffer Objects.
+    Here we specify that the vao contains a vbo that made up of bundles of 3 consecutive 32-bit floats named collectively 'in_position'.
+    Buffer objects contain your vertex data. Vertex array objects tell OpenGL how to interpret that data. 
+    Without the VAO, OpenGL just knows that you suck some bytes into some buffers. 
+    """
     def get_vao(self):
         vao = self._gl_context.vertex_array(self._shader_program, [(self._vbo, '3f', 'in_position')])
         return vao
@@ -56,6 +61,7 @@ class HelloTriangle:
         return program
 
 
+
 class Api8:
     def __init__(self, win_size = (1280, 720), fps = 60):
         # init pyglet and OpenGL context
@@ -70,18 +76,21 @@ class Api8:
         # detect and use existing OpenGL context
         self._gl_context = moderngl.create_context()
         # scene
-        self.scene = HelloTriangle(self._gl_context)
+        self._scene = HelloTriangle(self._gl_context)
         
     def render(self, dt):
         # clear the framebuffer
         self._gl_context.clear(color=(0.9, 0.8, 0.01)) # "The fact that gold exists makes every other colours equally inferior."
         # render scene
-        self.scene.render()
+        self._scene.render()
         # swap buffers
         self._window.flip()
     
     def run(self):
         pyglet.app.run()
+        
+    def on_close(self):
+        self._scene.destroy()
     
 
 if __name__ == '__main__':
