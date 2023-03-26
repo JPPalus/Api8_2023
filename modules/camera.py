@@ -3,6 +3,7 @@ import glm
 FOV = 50 # deg
 NEAR = 0.1
 FAR = 100
+SPEED = 5.
 
 class Camera:
     def __init__(self, win_size) -> None:
@@ -10,6 +11,8 @@ class Camera:
         self._position = glm.vec3(0) # eye, position of the camera
         self._center = glm.vec3(0) # the point where the camera aims
         self._up = glm.vec3(0) # how the camera is oriented
+        self._right = glm.vec3(1, 0, 0)
+        self._forward = glm.vec3(0, 0, -1)
         # view matrix : moves your geometry from world space to view space
         self._view_matrix = self.get_identity_matrix()
         # projection matrix : scale the gometry according to the distance from the camera
@@ -22,10 +25,35 @@ class Camera:
     @property
     def view_matrix(self) -> glm.fmat4x4:
         return self._view_matrix
-        
-    def get_identity_matrix(self) -> glm.fmat4x4:
+    
+    @staticmethod
+    def get_identity_matrix() -> glm.fmat4x4:
         return glm.identity(glm.fmat4x4)
+    
+    def move(self, direction, dt):
+        velocity = SPEED * dt
+        if direction == 'forward':
+            self._position += self._forward * velocity
+        if direction == 'backward':
+            self._position -= self._forward * velocity
+        if direction == 'straf_left':
+            self._position -= self._right * velocity
+        if direction == 'straf_right':
+            self._position += self._right * velocity
+        if direction == 'up':
+            self._position += self._up * velocity
+        if direction == 'down':
+            self._position -= self._up * velocity
+        if direction == 'left':
+            self._position = glm.rotate(self._position, velocity / 10, glm.vec3(0, -1, 0))
+        if direction == 'right':
+            self._position = glm.rotate(self._position, velocity / 10, glm.vec3(0, 1, 0))
+        # update the camera position according to keyboard events
+        self.update_view_matrix()
         
+    def update_view_matrix(self):
+        self._view_matrix = glm.lookAt(self._position, self._position + self._forward, self._up)
+    
     def get_default_projection_matrix(self) -> glm.fmat4x4:
         return glm.perspective(glm.radians(FOV), self._aspect_ratio, NEAR, FAR)
     

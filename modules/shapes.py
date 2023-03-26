@@ -75,7 +75,10 @@ class TestCube:
     
     def update(self):
         self._model_matrix = glm.rotate(self._model_matrix, 0.02, glm.vec3(0, 1, 0))
+        # update the position of the model
         self._shader_program['model_matrix'].write(self._model_matrix)
+        # update the position of the camera
+        self._shader_program['view_matrix'].write(self.engine.camera.view_matrix)
 
     def render(self) -> None:
         self.update()
@@ -160,7 +163,10 @@ class SkeletonCube:
     
     def update(self):
         self._model_matrix = glm.rotate(self._model_matrix, 0.02, glm.vec3(0, 1, 0))
+        # update the position of the model
         self._shader_program['model_matrix'].write(self._model_matrix)
+        # update the position of the camera
+        self._shader_program['view_matrix'].write(self.engine.camera.view_matrix)
 
     def render(self) -> None:
         self.update()
@@ -249,7 +255,10 @@ class CompanionCube:
     
     def update(self):
         self._model_matrix = glm.rotate(self._model_matrix, 0.02, glm.vec3(0, 1, 0))
+        # update the position of the model
         self._shader_program['model_matrix'].write(self._model_matrix)
+        # update the position of the camera
+        self._shader_program['view_matrix'].write(self.engine.camera.view_matrix)
 
     def render(self) -> None:
         self.update()

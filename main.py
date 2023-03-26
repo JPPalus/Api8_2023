@@ -8,8 +8,8 @@ if __name__ == '__main__':
     demo.set_default_camera()
     
     # scenes = [HelloTriangle(demo)]
-    # scenes = [TestCube(demo), SkeletonCube(demo)]
-    scenes = [Teapot(demo)]
+    scenes = [TestCube(demo), SkeletonCube(demo)]
+    # scenes = [Teapot(demo)]
     demo.set_scenes(scenes)
 
     demo.run()
