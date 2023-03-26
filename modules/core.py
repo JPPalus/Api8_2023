@@ -20,7 +20,8 @@ class GLEngine:
         self._time = 0
         # detect and use existing OpenGL context
         self._gl_context = moderngl.create_context()
-        self.gl_context.enable_only(moderngl.DEPTH_TEST | moderngl.CULL_FACE | moderngl.DEPTH_TEST | moderngl.PROGRAM_POINT_SIZE)
+        # self.gl_context.enable_only(moderngl.DEPTH_TEST | moderngl.CULL_FACE | moderngl.PROGRAM_POINT_SIZE)
+        self.gl_context.enable_only(moderngl.DEPTH_TEST | moderngl.PROGRAM_POINT_SIZE)
         self._gl_context.clear(color=(0.9, 0.8, 0.01)) # "The fact that gold exists makes every other colours equally inferior."
         # loop handler
         pgclock.schedule(self.update_time)

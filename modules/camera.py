@@ -11,9 +11,9 @@ class Camera:
         self._center = glm.vec3(0) # the point where the camera aims
         self._up = glm.vec3(0) # how the camera is oriented
         # view matrix : moves your geometry from world space to view space
-        self._view_matrix = self.get_identity_projection_matrix()
+        self._view_matrix = self.get_identity_matrix()
         # projection matrix : scale the gometry according to the distance from the camera
-        self._projection_matrix = self.get_identity_projection_matrix()
+        self._projection_matrix = self.get_identity_matrix()
         
     @property
     def projection_matrix(self) -> glm.fmat4x4:
@@ -23,7 +23,7 @@ class Camera:
     def view_matrix(self) -> glm.fmat4x4:
         return self._view_matrix
         
-    def get_identity_projection_matrix(self) -> glm.fmat4x4:
+    def get_identity_matrix(self) -> glm.fmat4x4:
         return glm.identity(glm.fmat4x4)
         
     def get_default_projection_matrix(self) -> glm.fmat4x4:
@@ -33,8 +33,8 @@ class Camera:
         return glm.lookAt(self._position, self._center, self._up)
     
     def set_null_camera(self) -> None:
-        self.view_matrix = self.get_identity_projection_matrix()
-        self._projection_matrix = self.get_identity_projection_matrix()
+        self.view_matrix = self.get_identity_matrix()
+        self._projection_matrix = self.get_identity_matrix()
     
     def set_default_camera(self) -> None:
         self._projection_matrix = self.get_default_projection_matrix()

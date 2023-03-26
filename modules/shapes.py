@@ -228,7 +228,7 @@ class CompanionCube:
         self._model_matrix = self.get_identity_matrix() # translations, rotations or scaling applied to the object
         # texture
         self._texture = self.get_texture(path='textures/companion_cube.png')
-        self._shader_program['utexture'] = 0 # Define the decture unit we'll use
+        self._shader_program['utexture'] = 0 # Define the texture unit we'll use
         self._texture.use()
         # send transformation matrices to the CPU
         self._shader_program['projection_matrix'].write(self.engine.camera.projection_matrix)

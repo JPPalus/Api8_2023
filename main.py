@@ -1,7 +1,6 @@
 from modules.core import GLEngine
 from modules.shapes import *
-
-# from modules.teapot import Teapot
+from beta.teapot import Teapot
     
 
 if __name__ == '__main__':
@@ -10,7 +9,7 @@ if __name__ == '__main__':
     
     # scenes = [HelloTriangle(demo)]
     # scenes = [TestCube(demo), SkeletonCube(demo)]
-    scenes = [CompanionCube(demo)]
+    scenes = [Teapot(demo)]
     demo.set_scenes(scenes)
 
     demo.run()
