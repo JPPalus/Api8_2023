@@ -14,7 +14,7 @@ in vec2 vtexcoord;
 in vec3 vnormal;
 in vec3 vfragment_position;
 
-uniform sampler2D utexture;
+uniform sampler2D utexture_0;
 uniform vec3 camera_position;
 uniform Light light;
 uniform float surface_brightness;
@@ -69,7 +69,7 @@ getLight(vec3 color) {
 
 void
 main() {
-    vec3 color = texture(utexture, vtexcoord).rgb;
+    vec3 color = texture(utexture_0, vtexcoord).rgb;
     color = getLight(color);
     fragColor = vec4(color, 1.0);
 }

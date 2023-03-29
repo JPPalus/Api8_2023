@@ -1,5 +1,6 @@
 
-//VERTEX SHADER#version 410 core
+//VERTEX SHADER
+#version 410 core
 
 in vec3 in_color;
 in vec3 in_position;

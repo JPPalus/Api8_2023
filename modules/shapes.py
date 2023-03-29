@@ -2,6 +2,7 @@ import numpy as np
 import moderngl
 import glm
 from pyglet import image
+from modules.light import Light
 
 
 class HelloTriangle:
@@ -218,29 +219,30 @@ class SkeletonCube:
 
 class CompanionCube:
     def __init__(self, engine) -> None:
-        self.engine = engine
+        self._engine = engine
+        self._light = Light()
         self._gl_context = engine.gl_context
-        # colored cube
+        # companion cube
         self._vbo = self.get_vbo()
         self._shader_program = self.get_shader_program('companionCube')
         self._vao = self.get_vao()
         # model matrix 
         self._model_matrix = self.get_identity_matrix() # translations, rotations or scaling applied to the object
         # light
-        self.shader_program['light.position'].write(self.engine.light._position)
-        self.shader_program['light.color'].write(self.engine.light._color)
-        self.shader_program['light.ambient_intensity'].write(self.engine.light._ambient_intensity)
-        self.shader_program['light.diffuse_intensity'].write(self.engine.light._diffuse_intensity)
-        self.shader_program['light.specular_intensity'].write(self.engine.light._specular_intensity)
+        self.shader_program['light.position'].write(self._light._position)
+        self.shader_program['light.color'].write(self._light._color)
+        self.shader_program['light.ambient_intensity'].write(self._light._ambient_intensity)
+        self.shader_program['light.diffuse_intensity'].write(self._light._diffuse_intensity)
+        self.shader_program['light.specular_intensity'].write(self._light._specular_intensity)
         # material
         self._shader_program['surface_brightness'] = 56.0 # shiny
         # texture
         self._texture = self.get_texture(path='textures/companion_cube.png')
-        self._shader_program['utexture'] = 0 # Define the texture unit we'll use
+        self._shader_program['utexture_0'] = 0 # Define the texture unit we'll use
         self._texture.use()
         # send transformation matrices to the CPU
-        self._shader_program['projection_matrix'].write(self.engine.camera.projection_matrix)
-        self._shader_program['view_matrix'].write(self.engine.camera.view_matrix)
+        self._shader_program['projection_matrix'].write(self._engine.camera.projection_matrix)
+        self._shader_program['view_matrix'].write(self._engine.camera.view_matrix)
         self._shader_program['model_matrix'].write(self._model_matrix)
         
     @property
@@ -256,12 +258,12 @@ class CompanionCube:
         return texture
     
     def update(self):
-        self._model_matrix = glm.rotate(self._model_matrix, 0.02, glm.vec3(0, 1, 0))
+        self._model_matrix *= glm.rotate(0.02, glm.vec3(0, 1, 0))
         # update the position of the model
         self._shader_program['model_matrix'].write(self._model_matrix)
         # update the position of the camera
-        self._shader_program['view_matrix'].write(self.engine.camera.view_matrix)
-        self._shader_program['camera_position'].write(self.engine.camera.position)
+        self._shader_program['view_matrix'].write(self._engine.camera.view_matrix)
+        self._shader_program['camera_position'].write(self._engine.camera.position)
 
     def render(self) -> None:
         self.update()

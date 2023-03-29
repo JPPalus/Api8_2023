@@ -41,8 +41,6 @@ class GLEngine:
         pgclock.schedule_interval(self.render, 1 / fps)
         # camera
         self._camera = Camera(self)
-        # lightsources
-        self._light = Light()
         # scene
         self._scenes = []
 
