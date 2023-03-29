@@ -4,9 +4,10 @@ import pyglet.app as pgapp
 import pyglet.window as pgwindow
 import pyglet.clock as pgclock
 import moderngl
+from typing import Any
 from modules.camera import Camera
 from modules.light import Light
-from collections.abc import Generator
+from modules.scene import Scene
 
 
 if platform.system() == "Darwin":
@@ -14,7 +15,7 @@ if platform.system() == "Darwin":
 pg.options["debug_gl"] = False
 
 class GLEngine:
-    def __init__(self, win_size=(1280, 720), fps=60, debug = False, allow_mouse_controls = False) -> None:
+    def __init__(self, win_size: tuple[int, int] = (1280, 720), fps: int = 60, debug: bool = False, allow_mouse_controls: bool = False) -> None:
         self._debug = debug
         self._allow_mouse_controls = allow_mouse_controls
         # init pyglet and OpenGL context
@@ -30,8 +31,8 @@ class GLEngine:
                                    on_key_release = self.on_key_release)
         # detect and use existing OpenGL context
         self._gl_context = moderngl.create_context()
-        # self.gl_context.enable_only(moderngl.DEPTH_TEST | moderngl.CULL_FACE | moderngl.PROGRAM_POINT_SIZE)
-        self.gl_context.enable_only(moderngl.DEPTH_TEST | moderngl.PROGRAM_POINT_SIZE)
+        self.gl_context.enable_only(moderngl.DEPTH_TEST | moderngl.CULL_FACE | moderngl.PROGRAM_POINT_SIZE)
+        # self.gl_context.enable_only(moderngl.DEPTH_TEST | moderngl.PROGRAM_POINT_SIZE)
         # mouse settings
         self._window.set_exclusive_mouse(True)
         self._gl_context.clear(color=(0.9, 0.8, 0.01)) # "The fact that gold exists makes every other colours equally inferior."
@@ -42,7 +43,7 @@ class GLEngine:
         # camera
         self._camera = Camera(self)
         # scene
-        self._scenes = []
+        self._scenes: list[Scene] = []
 
     @property
     def gl_context(self) -> moderngl.Context:
@@ -64,31 +65,28 @@ class GLEngine:
     def debug(self) -> bool:
         return self._debug
     
-    @property # -> Generator['TODO, custom class']
-    def scenes(self):
+    @property 
+    def scenes(self) -> list[Scene | Any]:
         for scene in self._scenes:
             yield scene
             
-    @property # -> Generator['TODO, custom class']
-    def light(self):
+    @property
+    def light(self) -> Light:
         return self._light
         
-    def update_time(self, dt) -> None:
+    def update_time(self, dt: float) -> None:
         self._time += dt
     
-    def set_camera(self, camera) -> None:
+    def set_camera(self, camera: Camera) -> None:
         self._camera = camera
         
     def set_default_camera(self) -> None:
         self._camera.set_default_camera()
 
-    def set_scenes(self, scenes) -> None:
+    def set_scenes(self, scenes: list[Scene]) -> None:
         self._scenes = scenes
-        
-    def set_lights(self, lights) -> None:
-        self._light = lights
 
-    def render(self, dt) -> None:
+    def render(self, dt: float) -> None:
         # clear the framebuffer
         self._gl_context.clear(color=(0.9, 0.8, 0.01)) # "The fact that gold exists makes every other colours equally inferior." Big E.
         # render the scene
@@ -100,7 +98,7 @@ class GLEngine:
     def run(self) -> None:
         pgapp.run()
         
-    def handle_key_pressed(self, dt) -> None:
+    def handle_key_pressed(self, dt: float) -> None:
         if self._keys_state.get(pgwindow.key.Z):
             self._camera.move("forward", dt)
         if self._keys_state.get(pgwindow.key.S):
@@ -122,7 +120,7 @@ class GLEngine:
         if self._keys_state.get(pgwindow.key.DOWN):
             self._camera.move("down", dt)
 
-    def on_key_press(self, symbol, modifier) -> None:
+    def on_key_press(self, symbol: pgwindow.key, modifier: int) -> None:
         # options 
         # j : activate / deactivate debug mode
         if symbol == pgwindow.key.J:
@@ -165,7 +163,7 @@ class GLEngine:
         if symbol == pgwindow.key.DOWN:
             self._keys_state[pgwindow.key.DOWN] = True
             
-    def on_key_release(self, symbol, modifier) -> None:
+    def on_key_release(self, symbol: pgwindow.key, modifier: int) -> None:
         # move controls
         if symbol == pgwindow.key.Z:
             self._keys_state[pgwindow.key.Z] = False
@@ -188,7 +186,7 @@ class GLEngine:
         if symbol == pgwindow.key.DOWN:
             self._keys_state[pgwindow.key.DOWN] = False
             
-    def on_mouse_motion(self, x, y, dx, dy) -> None:
+    def on_mouse_motion(self, x: float, y: float, dx: float, dy: float) -> None:
         if self._allow_mouse_controls == True :
             self._camera.rotate(x, y, dx, dy)
 

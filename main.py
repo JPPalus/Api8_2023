@@ -2,7 +2,8 @@ from modules.core import GLEngine
 from modules.shapes import *
 from beta.teapot import Teapot
 from modules.scene import *
-    
+
+
 
 if __name__ == '__main__':
     demo = GLEngine(debug=True)

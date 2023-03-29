@@ -1,6 +1,7 @@
 import glm
 import modules.glmath as glmath
 from copy import copy
+from typing import TYPE_CHECKING
 
 FOV = 50 # deg
 NEAR = 0.1
@@ -9,7 +10,7 @@ SPEED = 5.
 SENSITIVITY = 0.5
 
 class Camera:
-    def __init__(self, engine, position = (0, 0, 4), yaw = -90, pitch = 0) -> None:
+    def __init__(self, engine, position: tuple[int, int, int] = (0, 0, 4), yaw: float = -90, pitch: float = 0.0) -> None:
         self._engine = engine
         self._aspect_ratio = engine.win_size[0] / engine.win_size[1]
         self._default_position =  glm.vec3(position)
@@ -41,7 +42,7 @@ class Camera:
     def position(self) -> glm.fvec3:
         return self._position
     
-    def move(self, direction, dt) -> None:
+    def move(self, direction: str, dt: float) -> None:
         velocity = SPEED * dt
         # movement controls
         if direction == 'forward':
@@ -68,7 +69,7 @@ class Camera:
         self.update_camera_vectors()
         self.update_view_matrix()
         
-    def rotate(self, x, y, dx, dy) -> None:
+    def rotate(self, x: float, y: float, dx: float, dy: float) -> None:
         if self._engine.debug:
             print(f'x = {x}, y = {y}, dx = {dx}, dy = {dy}')
         dx = dx if abs(dx) > abs(dy) else 0
@@ -113,9 +114,6 @@ class Camera:
         self._projection_matrix = glmath.identity_matrix()
     
     def set_default_camera(self) -> None:
-        # TODO
-        for scene in self._engine.scenes:
-            scene._model_matrix = glmath.identity_matrix()
         self._position = copy(self._default_position)
         self._center = glm.vec3(0)
         self._up = glm.vec3(0, 1, 0)

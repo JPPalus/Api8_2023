@@ -1,6 +1,7 @@
 import glm
+from typing import Any
 from modules.light import Light
-from modules.model import CompanionCube
+from modules.model import Model, CompanionCube
 
 
 
@@ -9,31 +10,30 @@ class Scene:
         self._engine = engine
         self._gl_context = engine.gl_context
         self._camera = engine.camera
-        self._light = self.get_default_light()
-        self._models = []
+        self._light: Light = self.get_default_light()
+        self._models: list[Model] = []
         
-    @property # TODO types
-    def models(self):
+    @property
+    def models(self) -> list[Model]:
         return self._models
     
-    @property # TODO types
-    def light(self):
+    @property
+    def light(self) -> Light:
         return self._light
     
-    # TODO types  
-    def get_default_light(self):
+    def get_default_light(self) -> Light:
         light = Light()
         return light
     
-    def set_models(self, models) -> None:
+    def set_models(self, models: list[Model]) -> None:
         self._models = models
         
-    def add_model(self, model, shader_name) -> None:
+    def add_model(self, model: Model, shader_name: str) -> None:
         self._models.append((model, shader_name))
         
-    def load_uniform(self, model_index, attribute, data) -> None:
+    def load_uniform(self, model_index: int, attribute: str, data: Any) -> None:
         shader_program = self._models[model_index].shader_program
-        if type(data) == float or int:
+        if type(data) == float or type(data) == int:
             shader_program[attribute] = (data) 
         else:   
             shader_program[attribute].write(data)
@@ -57,7 +57,7 @@ class Scene:
             shader_program = model.shader_program
             shader_program['model_matrix'].write(model.model_matrix)
         
-    def set_light(self, light) -> None:
+    def set_light(self, light: Light) -> None:
         self._light = light
     
     def render(self) -> None:

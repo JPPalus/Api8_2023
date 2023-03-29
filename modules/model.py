@@ -6,11 +6,11 @@ import glm
 
 
 class Texture:
-    def __init__(self, context, path) -> None:
+    def __init__(self, context: moderngl.Context, path: str) -> None:
         self._gl_context = context
         self._texture = self.get_texture(path)
         
-    def get_texture(self, path) -> moderngl.Texture:
+    def get_texture(self, path: str) -> moderngl.Texture:
         pic = image.load(path)
         raw_pic = pic.get_image_data()
         texture_data = raw_pic.get_data('RGB', raw_pic.width * 3)
@@ -20,7 +20,7 @@ class Texture:
                                            data = texture_data)
         return texture
     
-    def use(self):
+    def use(self) -> None:
         self._texture.use()
     
     def destroy(self) -> None:
@@ -28,11 +28,11 @@ class Texture:
 
 
 class Model:
-    def __init__(self, engine, shader_program_path = 'shaders/default') -> None:
+    def __init__(self, engine, shader_program_path: str = 'shaders/default') -> None:
         self._engine = engine
         self._gl_context = engine.gl_context
         self._shader_program = self.get_shader_program(shader_program_path)
-        self._textures = {}
+        self._textures: dict[int, Texture] = {}
         self._material = 56.0
         self._vbo: moderngl.Buffer = None
         self._vao: moderngl.VertexArray = None
@@ -50,18 +50,17 @@ class Model:
     def shader_program(self) -> moderngl.Program:
         return self._shader_program
     
-    # TODO -> type.Texture
-    def get_texture(self, sampler_id):
+    def get_texture(self, sampler_id: int) -> Texture:
         return self._textures[sampler_id]
     
-    def use_textures(self):
+    def use_textures(self) -> None:
         for texture_id in self._textures:
             self._textures[texture_id].use()
     
     def set_material(self, material: float) -> None:
         self._material = material
         
-    def set_textures(self, textures) -> None:
+    def set_textures(self, textures: dict[int, Texture]) -> None:
         self._textures = textures
         
     def add_texture(self, texture, sampler_id: int) -> None:
@@ -74,7 +73,8 @@ class Model:
         self._vao = self._gl_context.vertex_array(self._shader_program, 
                                                 [(self._vbo, format, *attributes)])
         
-    def get_shader_program(self, shader_program_path, vertex = True, fragment = True, geometry = False, tess = False) -> moderngl.Program:
+    def get_shader_program(self, shader_program_path: str, vertex: bool = True, fragment: bool  = True, 
+                                 geometry: bool  = False, tess: bool  = False) -> moderngl.Program:
         if vertex:
             with open(f'{shader_program_path}.vert') as file:
                 vertex_shader = file.read()
@@ -85,14 +85,14 @@ class Model:
             with open(f'{shader_program_path}.frag') as file:
                 fragment_shader = file.read()
         else:   
-            fragment_shader = None
+            fragment_shader = None  
             
         if geometry:
             with open(f'{shader_program_path}.geom') as file:
                 geometry_shader = file.read()
         else:
             geometry_shader = None
-        
+            
         if tess:
             with open(f'{shader_program_path}.tesc') as file:
                 tessellation_control_shader = file.read()
@@ -100,7 +100,7 @@ class Model:
                 tessellation_evaluation_shader = file.read()
         else:
             tessellation_control_shader = None
-            tessellation_evaluation_shader = None
+            tessellation_evaluation_shader = None  
             
         program = self._gl_context.program(vertex_shader = vertex_shader, 
                                            fragment_shader = fragment_shader,
@@ -116,7 +116,6 @@ class Model:
     def render(self) -> None:
         self._vao.render()
         
-    
     def destroy(self) -> None:
         self._shader_program.release()
         for texture in self._textures:

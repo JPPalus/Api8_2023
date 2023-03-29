@@ -1,7 +1,7 @@
 import glm
 
 class Light:
-    def __init__(self, position = (3, 3, -3), color = (1, 1, 1)) -> None:
+    def __init__(self, position: tuple[int, int, int] = (3, 3, -3), color: tuple[int, int, int] = (1, 1, 1)) -> None:
         self._position = glm.vec3(position)
         self._color = glm.vec3(color)
         # intensity of lightsources
@@ -11,23 +11,22 @@ class Light:
         
         @property
         def color(self) -> glm.fvec3:
-            self._color
+            return self._color
         
         @property
         def position(self) -> glm.fvec3:
             return self._position
         
         @property
-        def ambient_intensity(self) :
-            print(type(self._ambient_intensity))
+        def ambient_intensity(self) -> glm.fvec3:
             return self._ambient_intensity
 
         @property
-        def diffuse_intensity(self) :
+        def diffuse_intensity(self)-> glm.fvec3:
             return self._diffuse_intensity
         
         @property
-        def specular_intensity(self) :
+        def specular_intensity(self)-> glm.fvec3:
             return self._specular_intensity
         
     
