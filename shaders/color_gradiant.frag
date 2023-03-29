@@ -1,3 +1,4 @@
+//FRAGMENT SHADER
 #version 410 core
 
 in vec4 vcolor;

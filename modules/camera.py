@@ -37,6 +37,10 @@ class Camera:
     def default_position(self) -> glm.fvec3:
         return self._default_position
     
+    @property
+    def position(self) -> glm.fvec3:
+        return self._position
+    
     def move(self, direction, dt) -> None:
         velocity = SPEED * dt
         # movement controls
@@ -64,7 +68,7 @@ class Camera:
         self.update_camera_vectors()
         self.update_view_matrix()
         
-    def rotate(self, x, y, dx, dy):
+    def rotate(self, x, y, dx, dy) -> None:
         if self._engine.debug:
             print(f'x = {x}, y = {y}, dx = {dx}, dy = {dy}')
         dx = dx if abs(dx) > abs(dy) else 0

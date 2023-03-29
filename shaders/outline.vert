@@ -1,3 +1,4 @@
+//VERTEX SHADER
 #version 410 core
 
 in vec3 in_color;

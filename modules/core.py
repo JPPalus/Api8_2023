@@ -5,6 +5,7 @@ import pyglet.window as pgwindow
 import pyglet.clock as pgclock
 import moderngl
 from modules.camera import Camera
+from modules.light import Light
 from collections.abc import Generator
 
 
@@ -24,12 +25,9 @@ class GLEngine:
         self._time = 0
         # keyboard event handler
         self._keys_state = {pgwindow.key : bool}
-        self._keys = pgwindow.key.KeyStateHandler()
-        self._window.push_handlers(self._keys, 
-                                   on_mouse_motion = self.on_mouse_motion,
+        self._window.push_handlers(on_mouse_motion = self.on_mouse_motion,
                                    on_key_press = self.on_key_press,
                                    on_key_release = self.on_key_release)
-        
         # detect and use existing OpenGL context
         self._gl_context = moderngl.create_context()
         # self.gl_context.enable_only(moderngl.DEPTH_TEST | moderngl.CULL_FACE | moderngl.PROGRAM_POINT_SIZE)
@@ -43,6 +41,8 @@ class GLEngine:
         pgclock.schedule_interval(self.render, 1 / fps)
         # camera
         self._camera = Camera(self)
+        # lightsources
+        self._light = Light()
         # scene
         self._scenes = []
 
@@ -70,6 +70,10 @@ class GLEngine:
     def scenes(self):
         for scene in self._scenes:
             yield scene
+            
+    @property # -> Generator['TODO, custom class']
+    def light(self):
+        return self._light
         
     def update_time(self, dt) -> None:
         self._time += dt
@@ -82,6 +86,9 @@ class GLEngine:
 
     def set_scenes(self, scenes) -> None:
         self._scenes = scenes
+        
+    def set_lights(self, lights) -> None:
+        self._light = lights
 
     def render(self, dt) -> None:
         # clear the framebuffer
@@ -119,16 +126,20 @@ class GLEngine:
 
     def on_key_press(self, symbol, modifier) -> None:
         # options 
+        # j : activate / deactivate debug mode
         if symbol == pgwindow.key.J:
             self._debug = not self._debug
             debug_state = 'activated' if self._debug else 'deactivated'
             print(f'debug mode {debug_state}')   
+        # r : reset camera and models to default position
         if symbol == pgwindow.key.R:
             self._camera.reset_camera()
             if self._debug:
                 print(f'camera reset to {self._camera._default_position}')
+        # l : look at the scene being rendered
         if symbol == pgwindow.key.L:
             self._camera.look_at_scene()
+        # m : allow / disable mouse camera controls
         if symbol == pgwindow.key.M:
             self._allow_mouse_controls = not self._allow_mouse_controls
             if self._debug:
@@ -179,7 +190,7 @@ class GLEngine:
         if symbol == pgwindow.key.DOWN:
             self._keys_state[pgwindow.key.DOWN] = False
             
-    def on_mouse_motion(self, x, y, dx, dy):
+    def on_mouse_motion(self, x, y, dx, dy) -> None:
         if self._allow_mouse_controls == True :
             self._camera.rotate(x, y, dx, dy)
 

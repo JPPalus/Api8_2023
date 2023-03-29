@@ -9,8 +9,8 @@ B(int i, float u) {
     return bc[i] * pow(u, i) * pow(1.0 - u, 3 - i);
 }
 
-void main()
-{
+void 
+main() {
     vec4 p = vec4(1.0);
 
     float u = gl_TessCoord.x;

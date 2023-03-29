@@ -3,8 +3,8 @@
 layout (vertices = 16) out;
 
 
-void main()
-{
+void 
+main() {
     gl_out[gl_InvocationID].gl_Position = gl_in[gl_InvocationID].gl_Position;
     
     gl_TessLevelInner[0] = 4;

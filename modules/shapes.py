@@ -46,10 +46,8 @@ class HelloTriangle:
     def get_shader_program(self, shader_name) -> moderngl.Program:
         with open(f'shaders/{shader_name}.vert') as file:
             vertex_shader = file.read()
-
         with open(f'shaders/{shader_name}.frag') as file:
             fragment_shader = file.read()
-
         program = self._gl_context.program(vertex_shader=vertex_shader, fragment_shader=fragment_shader)
         return program
 
@@ -73,7 +71,7 @@ class TestCube:
     def shader_program(self) -> moderngl.Program:
         return self._shader_program
     
-    def update(self):
+    def update(self) -> None:
         self._model_matrix = glm.rotate(self._model_matrix, 0.02, glm.vec3(0, 1, 0))
         # update the position of the model
         self._shader_program['model_matrix'].write(self._model_matrix)
@@ -134,10 +132,8 @@ class TestCube:
     def get_shader_program(self, shader_name) -> moderngl.Program:
         with open(f'shaders/{shader_name}.vert') as file:
             vertex_shader = file.read()
-
         with open(f'shaders/{shader_name}.frag') as file:
             fragment_shader = file.read()
-
         program = self._gl_context.program(vertex_shader=vertex_shader, fragment_shader=fragment_shader)
         return program
     
@@ -161,7 +157,7 @@ class SkeletonCube:
     def shader_program(self) -> moderngl.Program:
         return self._shader_program
     
-    def update(self):
+    def update(self) -> None:
         self._model_matrix = glm.rotate(self._model_matrix, 0.02, glm.vec3(0, 1, 0))
         # update the position of the model
         self._shader_program['model_matrix'].write(self._model_matrix)
@@ -214,10 +210,8 @@ class SkeletonCube:
     def get_shader_program(self, shader_name) -> moderngl.Program:
         with open(f'shaders/{shader_name}.vert') as file:
             vertex_shader = file.read()
-
         with open(f'shaders/{shader_name}.frag') as file:
             fragment_shader = file.read()
-
         program = self._gl_context.program(vertex_shader=vertex_shader, fragment_shader=fragment_shader)
         return program
     
@@ -232,6 +226,14 @@ class CompanionCube:
         self._vao = self.get_vao()
         # model matrix 
         self._model_matrix = self.get_identity_matrix() # translations, rotations or scaling applied to the object
+        # light
+        self.shader_program['light.position'].write(self.engine.light._position)
+        self.shader_program['light.color'].write(self.engine.light._color)
+        self.shader_program['light.ambient_intensity'].write(self.engine.light._ambient_intensity)
+        self.shader_program['light.diffuse_intensity'].write(self.engine.light._diffuse_intensity)
+        self.shader_program['light.specular_intensity'].write(self.engine.light._specular_intensity)
+        # material
+        self._shader_program['surface_brightness'] = 56.0 # shiny
         # texture
         self._texture = self.get_texture(path='textures/companion_cube.png')
         self._shader_program['utexture'] = 0 # Define the texture unit we'll use
@@ -259,6 +261,7 @@ class CompanionCube:
         self._shader_program['model_matrix'].write(self._model_matrix)
         # update the position of the camera
         self._shader_program['view_matrix'].write(self.engine.camera.view_matrix)
+        self._shader_program['camera_position'].write(self.engine.camera.position)
 
     def render(self) -> None:
         self.update()
@@ -292,6 +295,17 @@ class CompanionCube:
                              (3, 1, 2), (3, 0, 1)]
         
         tex_coord_data = self.get_vertices_from_surface(tex_coord, tex_coord_indices)
+        
+        normals = [(0, 0, 1) * 6, # 3 triangles per face means 6 vertices with the same normal
+                   (1, 0, 0) * 6,
+                   (0, 0, -1) * 6,
+                   (-1, 0, 0) * 6,
+                   (0, 1, 0) * 6,
+                   (0, -1, 0) * 6]
+        
+        normals_data = np.array(normals, dtype='f4').reshape(36, 3)
+        vertex_data = np.hstack([normals_data, vertex_data])
+        
         vertex_data = np.hstack([tex_coord_data, vertex_data])
         
         return vertex_data
@@ -309,7 +323,7 @@ class CompanionCube:
 
     def get_vao(self) -> moderngl.VertexArray:
         vao = self._gl_context.vertex_array(self._shader_program, 
-                                            [(self._vbo, '2f 3f', 'in_texcoord', 'in_position')])
+                                            [(self._vbo, '2f 3f 3f', 'in_texcoord', 'in_normal', 'in_position')])
         return vao
         
     def get_vbo(self) -> moderngl.Buffer:
@@ -320,9 +334,7 @@ class CompanionCube:
     def get_shader_program(self, shader_name) -> moderngl.Program:
         with open(f'shaders/{shader_name}.vert') as file:
             vertex_shader = file.read()
-
         with open(f'shaders/{shader_name}.frag') as file:
             fragment_shader = file.read()
-
         program = self._gl_context.program(vertex_shader=vertex_shader, fragment_shader=fragment_shader)
         return program
