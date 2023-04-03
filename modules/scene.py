@@ -2,7 +2,7 @@ import glm
 import moderngl
 from typing import Any
 from modules.light import Light
-from modules.model import Model, CompanionCube
+from modules.model import Model, CompanionCubeModel, ColoredCubeModel, WireCubeModel
 
 
 
@@ -11,7 +11,7 @@ class Scene:
         self._engine = engine
         self._gl_context = engine.gl_context
         self._camera = engine.camera
-        self._light: Light = self.get_default_light()
+        self._light: Light = None
         self._models: list[Model] = []
         
     @property
@@ -64,19 +64,40 @@ class Scene:
         for model in self._models:
             self.load_model_matrices()
             self.load_view_matrices()
-            model.render()
+            model.render(mode = moderngl.TRIANGLES)
             
     def destroy(self) -> None:
         for model in self._models:
             model.destroy()           
             
 
-class CompanionCubeScene(Scene):
+class TestCube(Scene):
     def __init__(self, engine) -> None:
         super().__init__(engine)
         # model
-        self._models = [CompanionCube(engine)]
+        self._models = [ColoredCubeModel(engine), WireCubeModel(engine)]
+        # send transformation matrices to the CPU
+        self.load_model_matrices()
+        self.load_view_matrices()
+        self.load_projection_matrices()
+            
+    def render(self) -> None:
+        rotation = glm.rotate(0.02, glm.vec3(0, 1, 0))
+        self._models[0].transform(rotation)
+        self._models[1].transform(rotation)
+        self.load_model_matrices()
+        self.load_view_matrices()
+        self._models[0].render()
+        self._models[1].render(moderngl.LINE_STRIP)
+            
+
+class CompanionCube(Scene):
+    def __init__(self, engine) -> None:
+        super().__init__(engine)
+        # model
+        self._models = [CompanionCubeModel(engine)]
         # light
+        self._light = self.get_default_light()
         self.load_uniform(0, 'light.position', self.light._position)
         self.load_uniform(0, 'light.color', self.light._color)
         self.load_uniform(0, 'light.ambient_intensity', self.light._ambient_intensity)

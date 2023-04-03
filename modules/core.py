@@ -15,9 +15,17 @@ if platform.system() == "Darwin":
 pg.options["debug_gl"] = False
 
 class GLEngine:
-    def __init__(self, win_size: tuple[int, int] = (1280, 720), fps: int = 60, debug: bool = False, allow_mouse_controls: bool = False) -> None:
-        self._debug = debug
-        self._allow_mouse_controls = allow_mouse_controls
+    def __init__(self, win_size: tuple[int, int] = (1280, 720), 
+                 fps: int = 60, 
+                 debug: bool = False, 
+                 mouse_controls: bool = False, 
+                 cull_face: bool = True,
+                 wire_mode: bool = False) -> None:
+        
+        self._allow_debug_mode = debug
+        self._allow_wire_mode = wire_mode
+        self._allow_cull_face = cull_face
+        self._allow_mouse_controls = mouse_controls
         # init pyglet and OpenGL context
         self._WIN_SIZE = win_size
         self._window = pgwindow.Window(vsync=False)
@@ -31,8 +39,10 @@ class GLEngine:
                                    on_key_release = self.on_key_release)
         # detect and use existing OpenGL context
         self._gl_context = moderngl.create_context()
-        self.gl_context.enable_only(moderngl.DEPTH_TEST | moderngl.CULL_FACE | moderngl.PROGRAM_POINT_SIZE)
-        # self.gl_context.enable_only(moderngl.DEPTH_TEST | moderngl.PROGRAM_POINT_SIZE)
+        if self._allow_cull_face :
+            self.gl_context.enable_only(moderngl.DEPTH_TEST | moderngl.CULL_FACE | moderngl.PROGRAM_POINT_SIZE)
+        else : 
+            self.gl_context.enable_only(moderngl.DEPTH_TEST | moderngl.PROGRAM_POINT_SIZE)
         # mouse settings
         self._window.set_exclusive_mouse(True)
         self._gl_context.clear(color=(0.9, 0.8, 0.01)) # "The fact that gold exists makes every other colours equally inferior."
@@ -124,13 +134,20 @@ class GLEngine:
         # options 
         # j : activate / deactivate debug mode
         if symbol == pgwindow.key.J:
-            self._debug = not self._debug
-            debug_state = 'activated' if self._debug else 'deactivated'
+            self._allow_debug_mode = not self._allow_debug_mode
+            debug_state = 'activated' if self._allow_debug_mode else 'deactivated'
             print(f'debug mode {debug_state}')   
+        # k : activate / deactivate wire mode
+        if symbol == pgwindow.key.K:
+            self._allow_wire_mode = not self._allow_wire_mode
+            self._gl_context.wireframe = self._allow_wire_mode
+            if self._allow_debug_mode:
+                wire_mode_state = 'activated' if self._allow_wire_mode else 'deactivated'
+                print(f'wire mode {wire_mode_state}')
         # r : reset camera and models to default position
         if symbol == pgwindow.key.R:
             self._camera.reset_camera()
-            if self._debug:
+            if self._allow_debug_mode:
                 print(f'camera reset to {self._camera._default_position}')
         # l : look at the scene being rendered
         if symbol == pgwindow.key.L:
@@ -138,7 +155,7 @@ class GLEngine:
         # m : allow / disable mouse camera controls
         if symbol == pgwindow.key.M:
             self._allow_mouse_controls = not self._allow_mouse_controls
-            if self._debug:
+            if self._allow_debug_mode:
                 mouse_controls_state = 'activated' if self._allow_mouse_controls else 'deactivated'
                 print(f'camera controls with mouse {mouse_controls_state}')
         # move controls

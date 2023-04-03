@@ -31,7 +31,7 @@ class Teapot:
 
     def render(self) -> None:
         self.update()
-        self._vao.render(mode=moderngl.PATCHES)
+        self._vao.render(mode = moderngl.PATCHES)
 
     def destroy(self) -> None:
         self._vbo.release()

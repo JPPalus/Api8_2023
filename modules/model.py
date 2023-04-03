@@ -1,5 +1,5 @@
 from pyglet import image
-from modules.mesh import Cube
+from modules.mesh import SolidCubeMesh, WireCubeMesh, TexturedCubeMesh
 import modules.glmath as glmath
 import numpy as np
 import moderngl
@@ -114,8 +114,8 @@ class Model:
     def transform(self,  transformations: glm.fmat4x4) -> glm.fmat4x4:
         self._model_matrix *= transformations
     
-    def render(self) -> None:
-        self._vao.render()
+    def render(self, mode = moderngl.TRIANGLES) -> None:
+        self._vao.render(mode)
         
     def destroy(self) -> None:
         self._shader_program.release()
@@ -123,13 +123,13 @@ class Model:
             texture.destroy()
         
          
-class CompanionCube(Model):
+class CompanionCubeModel(Model):
     def __init__(self, engine) -> None:
         super().__init__(engine)
         # shader program
         self._shader_program = self.get_shader_program('shaders/companionCube')
         # cube mesh
-        self._mesh = Cube(self._engine)
+        self._mesh = TexturedCubeMesh(self._engine)
         # vbo
         vertex_data = self._mesh.get_vertex_data()
         self.set_vbo(vertex_data)
@@ -140,6 +140,55 @@ class CompanionCube(Model):
         # texture
         texture = Texture(context = self._gl_context, path = 'textures/companion_cube.png')
         self.add_texture(texture, 0)
+        
+
+class ColoredCubeModel(Model):
+    def __init__(self, engine) -> None:
+        super().__init__(engine)
+        # shader program
+        self._shader_program = self.get_shader_program('shaders/color_gradiant')
+        # cube mesh
+        self._mesh = SolidCubeMesh(self._engine)
+        # vbo
+        vertex_data = self._mesh.get_vertex_data()
+        self.set_vbo(vertex_data)
+        # vao
+        format = '3f 3f'
+        attributes = ['in_color', 'in_position']
+        self.set_vao(format, attributes)
+        
+
+class ColoredCubeModel(Model):
+    def __init__(self, engine) -> None:
+        super().__init__(engine)
+        # shader program
+        self._shader_program = self.get_shader_program('shaders/color_gradiant')
+        # cube mesh
+        self._mesh = SolidCubeMesh(self._engine)
+        # vbo
+        vertex_data = self._mesh.get_vertex_data()
+        self.set_vbo(vertex_data)
+        # vao
+        format = '3f 3f'
+        attributes = ['in_color', 'in_position']
+        self.set_vao(format, attributes)
+        
+        
+# must be rendered with LINE STRIP
+class WireCubeModel(Model):
+    def __init__(self, engine) -> None:
+        super().__init__(engine)
+        # shader program
+        self._shader_program = self.get_shader_program('shaders/outline')
+        # cube mesh
+        self._mesh = WireCubeMesh(self._engine)
+        # vbo
+        vertex_data = self._mesh.get_vertex_data()
+        self.set_vbo(vertex_data)
+        # vao
+        format = '3f 3f'
+        attributes = ['in_color', 'in_position']
+        self.set_vao(format, attributes)
          
         
         
