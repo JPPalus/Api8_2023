@@ -1,4 +1,5 @@
 from pyglet import image
+from modules.mesh import Cube
 import modules.glmath as glmath
 import numpy as np
 import moderngl
@@ -25,8 +26,8 @@ class Texture:
     
     def destroy(self) -> None:
         self._texture.release()
-
-
+        
+        
 class Model:
     def __init__(self, engine, shader_program_path: str = 'shaders/default') -> None:
         self._engine = engine
@@ -121,14 +122,16 @@ class Model:
         for texture in self._textures:
             texture.destroy()
         
-        
+         
 class CompanionCube(Model):
     def __init__(self, engine) -> None:
         super().__init__(engine)
         # shader program
         self._shader_program = self.get_shader_program('shaders/companionCube')
+        # cube mesh
+        self._mesh = Cube(self._engine)
         # vbo
-        vertex_data = self.get_vertex_data()
+        vertex_data = self._mesh.get_vertex_data()
         self.set_vbo(vertex_data)
         # vao
         format = '2f 3f 3f'
@@ -137,51 +140,6 @@ class CompanionCube(Model):
         # texture
         texture = Texture(context = self._gl_context, path = 'textures/companion_cube.png')
         self.add_texture(texture, 0)
-        
-    def get_vertex_data(self) -> np.ndarray:
-        vertex = [(-1, -1, 1), (1, -1, 1), (1, 1, 1), (-1, 1, 1),
-                  (-1, 1, -1), (-1, -1, -1), (1, -1, -1), (1, 1, -1)]
-
-        surfaces = [(0, 2, 3), (0, 1, 2),
-                    (1, 7, 2), (1, 6, 7),
-                    (6, 5, 4), (4, 7, 6),
-                    (3, 4, 5), (3, 5, 0),
-                    (3, 7, 4), (3, 2, 7),
-                    (0, 6, 1), (0, 5, 6)]
-        
-        vertex_data = self.get_vertices_from_surface(vertex, surfaces) # 32-bit floating-point
-        
-        tex_coord =  ((0, 0), (1, 0), (1, 1), (0, 1))
-        
-        tex_coord_indices = [(0, 2, 3), (0, 1, 2), 
-                             (0, 2, 3), (0, 1, 2),
-                             (0, 1, 2), (2, 3, 0),
-                             (2, 3, 0), (2, 0, 1),
-                             (0, 2, 3), (0, 1, 2),
-                             (3, 1, 2), (3, 0, 1)]
-        
-        tex_coord_data = self.get_vertices_from_surface(tex_coord, tex_coord_indices)
-        
-        normals = [(0, 0, 1) * 6, # 3 triangles per face means 6 vertices with the same normal
-                   (1, 0, 0) * 6,
-                   (0, 0, -1) * 6,
-                   (-1, 0, 0) * 6,
-                   (0, 1, 0) * 6,
-                   (0, -1, 0) * 6]
-        
-        normals_data = np.array(normals, dtype='f4').reshape(36, 3)
-        vertex_data = np.hstack([normals_data, vertex_data])
-        
-        vertex_data = np.hstack([tex_coord_data, vertex_data])
-        
-        return vertex_data
-
-    @staticmethod
-    def get_vertices_from_surface(vertices, surfaces) -> np.ndarray:
-        data = [vertices[indice]
-                for triangle in surfaces 
-                    for indice in triangle]
-        return np.array(data, dtype='f4')
          
         
         

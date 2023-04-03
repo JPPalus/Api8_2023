@@ -1,4 +1,5 @@
 import glm
+import moderngl
 from typing import Any
 from modules.light import Light
 from modules.model import Model, CompanionCube
@@ -22,8 +23,7 @@ class Scene:
         return self._light
     
     def get_default_light(self) -> Light:
-        light = Light()
-        return light
+        return Light()
     
     def set_models(self, models: list[Model]) -> None:
         self._models = models
@@ -42,17 +42,17 @@ class Scene:
         for model in self._models:
             model.use_textures()
             
-    def load_projection_matrix(self) -> None:
+    def load_projection_matrices(self) -> None:
         for model in self._models:
             shader_program = model.shader_program
             shader_program['projection_matrix'].write(self._camera.projection_matrix)
     
-    def load_view_matrix(self) -> None:
+    def load_view_matrices(self) -> None:
         for model in self._models:
             shader_program = model.shader_program
             shader_program['view_matrix'].write(self._camera.view_matrix)
             
-    def load_model_matrix(self) -> None:
+    def load_model_matrices(self) -> None:
         for model in self._models:
             shader_program = model.shader_program
             shader_program['model_matrix'].write(model.model_matrix)
@@ -62,8 +62,8 @@ class Scene:
     
     def render(self) -> None:
         for model in self._models:
-            self.load_model_matrix()
-            self.load_view_matrix()
+            self.load_model_matrices()
+            self.load_view_matrices()
             model.render()
             
     def destroy(self) -> None:
@@ -87,17 +87,17 @@ class CompanionCubeScene(Scene):
         self.load_uniform(0, 'utexture_0', 0)
         self.load_textures()
         # send transformation matrices to the CPU
-        self.load_model_matrix()
-        self.load_view_matrix()
-        self.load_projection_matrix()
+        self.load_model_matrices()
+        self.load_view_matrices()
+        self.load_projection_matrices()
         
         
     def render(self) -> None:
         rotation = glm.rotate(0.02, glm.vec3(0, 1, 0))
         for model in self._models:
             model.transform(rotation)
-            self.load_model_matrix()
-            self.load_view_matrix()
+            self.load_model_matrices()
+            self.load_view_matrices()
             self.load_uniform(0, 'camera_position', self._engine.camera.position)
             model.render()
 

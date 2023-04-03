@@ -1,5 +1,5 @@
 from modules.core import GLEngine
-from modules.shapes import *
+# from modules.shapes import *
 from beta.teapot import Teapot
 from modules.scene import *
 
