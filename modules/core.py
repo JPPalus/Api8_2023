@@ -1,4 +1,5 @@
 import platform
+import dearpygui.dearpygui as dpg
 import pyglet as pg
 import pyglet.app as pgapp
 import pyglet.window as pgwindow
@@ -13,6 +14,29 @@ from modules.scene import Scene
 if platform.system() == "Darwin":
     pg.options["shadow_window"] = False
 pg.options["debug_gl"] = False
+
+class DebugWindow:
+    def __init__(self) -> None:
+        def save_callback():
+            print("Save Clicked")
+
+        dpg.create_context()
+        dpg.create_viewport()
+        dpg.setup_dearpygui()
+
+        with dpg.window(label="Example Window"):
+            dpg.add_text("Hello world")
+            dpg.add_button(label="Save", callback=save_callback)
+            dpg.add_input_text(label="string")
+            dpg.add_slider_float(label="float")
+
+        dpg.show_viewport()
+        dpg.start_dearpygui()
+        dpg.destroy_context()
+    
+    
+    
+    
 
 class GLEngine:
     def __init__(self, win_size: tuple[int, int] = (1280, 720), 
@@ -54,6 +78,10 @@ class GLEngine:
         self._camera = Camera(self)
         # scene
         self._scenes: list[Scene] = []
+        
+        self._debug_window = pgwindow.Window(vsync=False)
+        DebugWindow()
+        
 
     @property
     def gl_context(self) -> moderngl.Context:
@@ -73,16 +101,12 @@ class GLEngine:
     
     @property
     def debug(self) -> bool:
-        return self._debug
+        return self._allow_debug_mode
     
     @property 
     def scenes(self) -> list[Scene | Any]:
         for scene in self._scenes:
             yield scene
-            
-    @property
-    def light(self) -> Light:
-        return self._light
         
     def update_time(self, dt: float) -> None:
         self._time += dt

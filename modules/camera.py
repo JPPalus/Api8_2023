@@ -104,6 +104,12 @@ class Camera:
     def get_default_view_matrix(self) -> glm.fmat4x4:
         return glm.lookAt(self._position, self._center, self._up)
     
+    def look_at_scene(self):
+        self._view_matrix = glm.lookAt(self._position, self._center, self._up)
+        self._forward = self._center
+        self.update_camera_vectors()
+
+    
     def set_null_camera(self) -> None:
         self._position = glm.vec3(0)
         self._center = glm.vec3(0)
