@@ -1,19 +1,15 @@
-import platform
+import sys
 import dearpygui.dearpygui as dpg
-import pyglet as pg
-import pyglet.app as pgapp
-import pyglet.window as pgwindow
-import pyglet.clock as pgclock
+import pygame as pg
+import pygame.time as pgtime
+import pygame.event as pgevent
+import pygame.mouse as pgmouse
 import moderngl
 from typing import Any
 from modules.camera import Camera
-from modules.light import Light
 from modules.scene import Scene
 
 
-if platform.system() == "Darwin":
-    pg.options["shadow_window"] = False
-pg.options["debug_gl"] = False
 
 class DebugWindow:
     def __init__(self) -> None:
@@ -30,13 +26,6 @@ class DebugWindow:
             dpg.add_input_text(label="string")
             dpg.add_slider_float(label="float")
 
-        dpg.show_viewport()
-        dpg.start_dearpygui()
-        dpg.destroy_context()
-    
-    
-    
-    
 
 class GLEngine:
     def __init__(self, win_size: tuple[int, int] = (1280, 720), 
@@ -50,17 +39,21 @@ class GLEngine:
         self._allow_wire_mode = wire_mode
         self._allow_cull_face = cull_face
         self._allow_mouse_controls = mouse_controls
-        # init pyglet and OpenGL context
+        self._fps = fps
+        # init pygame window
+        pg.init()
         self._WIN_SIZE = win_size
-        self._window = pgwindow.Window(vsync=False)
-        self._window_context = self._window.context
+        pg.display.gl_set_attribute(pg.GL_CONTEXT_MAJOR_VERSION, 4)
+        pg.display.gl_set_attribute(pg.GL_CONTEXT_MAJOR_VERSION, 1)
+        pg.display.gl_set_attribute(pg.GL_CONTEXT_PROFILE_MASK, pg.GL_CONTEXT_PROFILE_CORE)
+        # create OpenGL context
+        pg.display.set_mode(self._WIN_SIZE, flags = pg.OPENGL | pg.DOUBLEBUF)
         # keeps track of time
+        self._clock = pgtime.Clock()
         self._time = 0
+        self._delta_time = 0
         # keyboard event handler
-        self._keys_state = {pgwindow.key : bool}
-        self._window.push_handlers(on_mouse_motion = self.on_mouse_motion,
-                                   on_key_press = self.on_key_press,
-                                   on_key_release = self.on_key_release)
+        self._keys_state = {int : bool}
         # detect and use existing OpenGL context
         self._gl_context = moderngl.create_context()
         if self._allow_cull_face :
@@ -68,20 +61,18 @@ class GLEngine:
         else : 
             self.gl_context.enable_only(moderngl.DEPTH_TEST | moderngl.PROGRAM_POINT_SIZE)
         # mouse settings
-        self._window.set_exclusive_mouse(True)
+        pgevent.set_grab(True)
+        pgmouse.set_visible(False)
+        # background color
         self._gl_context.clear(color=(0.9, 0.8, 0.01)) # "The fact that gold exists makes every other colours equally inferior."
-        # loop handler
-        pgclock.schedule(self.update_time)
-        pgclock.schedule(self.handle_key_pressed)
-        pgclock.schedule_interval(self.render, 1 / fps)
         # camera
         self._camera = Camera(self)
         # scene
         self._scenes: list[Scene] = []
         
-        self._debug_window = pgwindow.Window(vsync=False)
+        # debug window
         DebugWindow()
-        
+        dpg.show_viewport()
 
     @property
     def gl_context(self) -> moderngl.Context:
@@ -107,9 +98,6 @@ class GLEngine:
     def scenes(self) -> list[Scene | Any]:
         for scene in self._scenes:
             yield scene
-        
-    def update_time(self, dt: float) -> None:
-        self._time += dt
     
     def set_camera(self, camera: Camera) -> None:
         self._camera = camera
@@ -119,118 +107,104 @@ class GLEngine:
 
     def set_scenes(self, scenes: list[Scene]) -> None:
         self._scenes = scenes
+        
+    # main loop
+    def run(self) -> None:
+        while True:
+            self.event_handler()
+            self.render()
+            self._delta_time = self._clock.tick(self._fps)
+            self.update_time()
 
-    def render(self, dt: float) -> None:
+    def render(self) -> None:
         # clear the framebuffer
         self._gl_context.clear(color=(0.9, 0.8, 0.01)) # "The fact that gold exists makes every other colours equally inferior." Big E.
         # render the scene
         for scene in self._scenes:
             scene.render()
         # swap buffers
-        self._window.flip()
+        pg.display.flip()
+        # dgp
+        if dpg.is_dearpygui_running():
+            dpg.render_dearpygui_frame()
+    
+    def event_handler(self) -> None:
+        self.on_key_hold()
+        self.on_mouse_motion()
+        for event in pgevent.get():
+            if event.type == pg.QUIT:
+                self.on_close()
+            elif event.type == pg.KEYDOWN:
+                self.on_key_press(event.key)
 
-    def run(self) -> None:
-        pgapp.run()
-        
-    def handle_key_pressed(self, dt: float) -> None:
-        if self._keys_state.get(pgwindow.key.Z):
-            self._camera.move("forward", dt)
-        if self._keys_state.get(pgwindow.key.S):
-            self._camera.move("backward", dt)
-        if self._keys_state.get(pgwindow.key.Q):
-            self._camera.move("straf_left", dt)
-        if self._keys_state.get(pgwindow.key.D):
-            self._camera.move("straf_right", dt)
-        if self._keys_state.get(pgwindow.key.A):
-            self._camera.move("straf_up", dt)
-        if self._keys_state.get(pgwindow.key.E):
-            self._camera.move("straf_down", dt)
-        if self._keys_state.get(pgwindow.key.RIGHT):
-            self._camera.move("right", dt)
-        if self._keys_state.get(pgwindow.key.LEFT):
-            self._camera.move("left", dt)
-        if self._keys_state.get(pgwindow.key.UP):
-            self._camera.move("up", dt)
-        if self._keys_state.get(pgwindow.key.DOWN):
-            self._camera.move("down", dt)
-
-    def on_key_press(self, symbol: pgwindow.key, modifier: int) -> None:
+    def on_key_press(self, symbol: int) -> None:
         # options 
+        # esc : quit 
+        if symbol == pg.K_ESCAPE:
+            self.on_close()
         # j : activate / deactivate debug mode
-        if symbol == pgwindow.key.J:
+        if symbol == pg.K_j:
             self._allow_debug_mode = not self._allow_debug_mode
             debug_state = 'activated' if self._allow_debug_mode else 'deactivated'
             print(f'debug mode {debug_state}')   
         # k : activate / deactivate wire mode
-        if symbol == pgwindow.key.K:
+        if symbol == pg.K_k:
             self._allow_wire_mode = not self._allow_wire_mode
             self._gl_context.wireframe = self._allow_wire_mode
             if self._allow_debug_mode:
                 wire_mode_state = 'activated' if self._allow_wire_mode else 'deactivated'
                 print(f'wire mode {wire_mode_state}')
         # r : reset camera and models to default position
-        if symbol == pgwindow.key.R:
+        if symbol == pg.K_r:
             self._camera.reset_camera()
             if self._allow_debug_mode:
                 print(f'camera reset to {self._camera._default_position}')
         # l : look at the scene being rendered
-        if symbol == pgwindow.key.L:
+        if symbol == pg.K_l:
             self._camera.look_at_scene()
         # m : allow / disable mouse camera controls
-        if symbol == pgwindow.key.M:
+        if symbol == pg.K_m:
             self._allow_mouse_controls = not self._allow_mouse_controls
             if self._allow_debug_mode:
                 mouse_controls_state = 'activated' if self._allow_mouse_controls else 'deactivated'
                 print(f'camera controls with mouse {mouse_controls_state}')
+        
+    def on_key_hold(self) -> None:
+        keys = pg.key.get_pressed()
         # move controls
-        if symbol == pgwindow.key.Z:
-            self._keys_state[pgwindow.key.Z] = True
-        if symbol == pgwindow.key.S:
-            self._keys_state[pgwindow.key.S] = True
-        if symbol == pgwindow.key.Q:
-            self._keys_state[pgwindow.key.Q] = True
-        if symbol == pgwindow.key.D:
-            self._keys_state[pgwindow.key.D] = True
-        if symbol == pgwindow.key.A:
-            self._keys_state[pgwindow.key.A] = True
-        if symbol == pgwindow.key.E:
-            self._keys_state[pgwindow.key.E] = True
-        if symbol == pgwindow.key.RIGHT:
-            self._keys_state[pgwindow.key.RIGHT] = True
-        if symbol == pgwindow.key.LEFT:
-            self._keys_state[pgwindow.key.LEFT] = True
-        if symbol == pgwindow.key.UP:
-            self._keys_state[pgwindow.key.UP] = True
-        if symbol == pgwindow.key.DOWN:
-            self._keys_state[pgwindow.key.DOWN] = True
+        if keys[pg.K_z]:
+            self._camera.move("forward", self._delta_time)
+        if keys[pg.K_s]:
+            self._camera.move("backward", self._delta_time)
+        if keys[pg.K_q]:
+            self._camera.move("straf_left", self._delta_time)
+        if keys[pg.K_d]:
+            self._camera.move("straf_right", self._delta_time)
+        if keys[pg.K_a]:
+            self._camera.move("straf_up", self._delta_time)
+        if keys[pg.K_e]:
+            self._camera.move("straf_down", self._delta_time)
+        if keys[pg.K_RIGHT]:
+            self._camera.move("right", self._delta_time)
+        if keys[pg.K_LEFT]:
+            self._camera.move("left", self._delta_time)
+        if keys[pg.K_UP]:
+            self._camera.move("up", self._delta_time)
+        if keys[pg.K_DOWN]:
+            self._camera.move("down", self._delta_time)
             
-    def on_key_release(self, symbol: pgwindow.key, modifier: int) -> None:
-        # move controls
-        if symbol == pgwindow.key.Z:
-            self._keys_state[pgwindow.key.Z] = False
-        if symbol == pgwindow.key.S:
-            self._keys_state[pgwindow.key.S] = False
-        if symbol == pgwindow.key.Q:
-            self._keys_state[pgwindow.key.Q] = False
-        if symbol == pgwindow.key.D:
-            self._keys_state[pgwindow.key.D] = False
-        if symbol == pgwindow.key.A:
-            self._keys_state[pgwindow.key.A] = False
-        if symbol == pgwindow.key.E:
-            self._keys_state[pgwindow.key.E] = False
-        if symbol == pgwindow.key.RIGHT:
-            self._keys_state[pgwindow.key.RIGHT] = False
-        if symbol == pgwindow.key.LEFT:
-            self._keys_state[pgwindow.key.LEFT] = False
-        if symbol == pgwindow.key.UP:
-            self._keys_state[pgwindow.key.UP] = False
-        if symbol == pgwindow.key.DOWN:
-            self._keys_state[pgwindow.key.DOWN] = False
-            
-    def on_mouse_motion(self, x: float, y: float, dx: float, dy: float) -> None:
+    def on_mouse_motion(self) -> None:
+        x, y = pgmouse.get_pos()
+        dx, dy = pgmouse.get_rel()
         if self._allow_mouse_controls == True :
             self._camera.rotate(x, y, dx, dy)
+            
+    def update_time(self) -> None:
+        self._time += self._delta_time
 
     def on_close(self) -> None:
         for scene in self._scenes:
             scene.destroy()
+        dpg.destroy_context()
+        pg.quit()
+        sys.exit()

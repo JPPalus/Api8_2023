@@ -1,13 +1,12 @@
 import glm
 import modules.glmath as glmath
 from copy import copy
-from typing import TYPE_CHECKING
 
 FOV = 50 # deg
 NEAR = 0.1
 FAR = 100
-SPEED = 5.
-SENSITIVITY = 0.5
+SPEED = 0.008
+SENSITIVITY = 0.08
 
 class Camera:
     def __init__(self, engine, position: tuple[int, int, int] = (0, 0, 4), yaw: float = -90, pitch: float = 0.0) -> None:
@@ -72,11 +71,11 @@ class Camera:
     def rotate(self, x: float, y: float, dx: float, dy: float) -> None:
         if self._engine.debug:
             print(f'x = {x}, y = {y}, dx = {dx}, dy = {dy}')
-        dx = dx if abs(dx) > abs(dy) else 0
-        dy = dy if abs(dy) > abs(dx) else 0
+        # dx = dx if abs(dx) > abs(dy) else 0
+        # dy = dy if abs(dy) > abs(dx) else 0
             
         self._yaw += dx * SENSITIVITY
-        self._pitch += dy * SENSITIVITY
+        self._pitch -= dy * SENSITIVITY
         self.update_camera_vectors()
         self.update_view_matrix()
         
@@ -93,10 +92,12 @@ class Camera:
         
         self._forward = glm.normalize(self._forward)
         self._right = glm.normalize(glm.cross(self._forward, glm.vec3(0, 1, 0)))
-        self._up = glm.normalize(glm.cross(self._right, self._forward))
+        # self._up = glm.normalize(glm.cross(self._right, self._forward))
         
     def update_view_matrix(self) -> None:
         self._view_matrix = glm.lookAt(self._position, self._position + self._forward, self._up)
+        print(f'self._position = {self._position}')
+        print(f'self._forward = {self._forward}')
     
     def get_default_projection_matrix(self) -> glm.fmat4x4:
         return glm.perspective(glm.radians(FOV), self._aspect_ratio, NEAR, FAR)
@@ -106,9 +107,6 @@ class Camera:
     
     def look_at_scene(self):
         self._view_matrix = glm.lookAt(self._position, self._center, self._up)
-        self._forward = self._center
-        self.update_camera_vectors()
-
     
     def set_null_camera(self) -> None:
         self._position = glm.vec3(0)
