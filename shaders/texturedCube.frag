@@ -9,15 +9,21 @@ struct Light {
     vec3 specular_intensity;
 };
 
+struct Material {
+    float surface_brightness;
+    vec3 ambient_incidence;
+    vec3 diffuse_incidence;
+    vec3 specular_incidence;
+};
 
 in vec2 vtexcoord;
 in vec3 vnormal;
 in vec3 vfragment_position;
 
-uniform sampler2D utexture_0;
+uniform sampler2D utexture;
 uniform vec3 camera_position;
 uniform Light light;
-uniform float surface_brightness;
+uniform Material material;
 
 out vec4 fragColor;
 
@@ -29,7 +35,7 @@ getLight(vec3 color) {
     vec3 normal = normalize(vnormal);
 
     /* ambient light */
-    vec3 ambient_light = light.ambient_intensity * light.color;
+    vec3 ambient_light = light.ambient_intensity * light.color * material.ambient_incidence;
 
     /* diffuse light */
     // The light's direction vector is the difference vector between the light's position vector and the fragment's position vector.
@@ -43,7 +49,7 @@ getLight(vec3 color) {
     // If the angle between both vectors is greater than 90 degrees then the result of the dot product will actually become negative,
     // so we max the diffusion to 0 to make sure the diffuse component (and thus the colors) never become negative.
     float diffusion= max(0.0, dot(light_direction, normal));
-    vec3 diffuse_light = diffusion * light.diffuse_intensity * light.color;
+    vec3 diffuse_light = diffusion * light.diffuse_intensity * light.color * material.diffuse_incidence;
 
     /* specular light */
     // Specular lighting is based on the reflective properties of surfaces.
@@ -61,15 +67,15 @@ getLight(vec3 color) {
     // We first calculate the dot product between the view direction and the reflect direction (and make sure it's not negative).
     // Then raise it to the power of the britghness of the surface material.
     // The higher the shininess value of an object, the more it properly reflects the light instead of scattering it all around and thus the smaller the highlight becomes. 
-    float specular = pow(max(dot(view_direction, reflection_direction), 0), surface_brightness);
-    vec3 specular_light = specular * light.specular_intensity * light.color;
+    float specular = pow(max(dot(view_direction, reflection_direction), 0), material.surface_brightness);
+    vec3 specular_light = specular * light.specular_intensity * light.color * material.specular_incidence;
 
     return color * (ambient_light + diffuse_light + specular_light);
 }
 
 void
 main() {
-    vec3 color = texture(utexture_0, vtexcoord).rgb;
+    vec3 color = texture(utexture, vtexcoord).rgb;
     color = getLight(color);
     fragColor = vec4(color, 1.0);
 }

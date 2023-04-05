@@ -2,7 +2,16 @@ import glm
 import moderngl
 from typing import Any
 from modules.light import Light
-from modules.model import Model, CompanionCubeModel, ColoredCubeModel, WireCubeModel
+from modules.model import (
+    Texture, 
+    Model, 
+    CompanionCubeModel,
+    TexturedCubeModel,
+    WoodenBoxModel, 
+    MetalBoxModel,
+    GoldenBoxModel,
+    ColoredCubeModel, 
+    WireCubeModel)
 
 
 
@@ -37,10 +46,6 @@ class Scene:
             shader_program[attribute] = (data) 
         else:   
             shader_program[attribute].write(data)
-        
-    def load_textures(self) -> None:
-        for model in self._models:
-            model.use_textures()
             
     def load_projection_matrices(self) -> None:
         for model in self._models:
@@ -68,9 +73,9 @@ class Scene:
             
     def destroy(self) -> None:
         for model in self._models:
-            model.destroy()           
-            
+            model.destroy()          
 
+        
 class TestCube(Scene):
     def __init__(self, engine) -> None:
         super().__init__(engine)
@@ -105,13 +110,11 @@ class CompanionCube(Scene):
         self.load_uniform(0, 'light.specular_intensity', self.light._specular_intensity)
         self.load_uniform(0, 'surface_brightness', self._models[0].material)
         # texture
-        self.load_uniform(0, 'utexture_0', 0)
-        self.load_textures()
+        self.load_uniform(0, 'utexture', 0)
         # send transformation matrices to the CPU
         self.load_model_matrices()
         self.load_view_matrices()
         self.load_projection_matrices()
-        
         
     def render(self) -> None:
         rotation = glm.rotate(0.02, glm.vec3(0, 1, 0))
@@ -121,6 +124,43 @@ class CompanionCube(Scene):
             self.load_view_matrices()
             self.load_uniform(0, 'camera_position', self._engine.camera.position)
             model.render()
+       
+            
+class TestingField(Scene):
+    def __init__(self, engine) -> None:
+        super().__init__(engine)
+        # model
+        self._models = [CompanionCubeModel(engine),
+                        GoldenBoxModel(engine, position = (-3.5, 0, 0)),
+                        WoodenBoxModel(engine, position = (3.5, 0, 0))]
+        # light
+        self._light = self.get_default_light()
+        for i in range(0, len(self._models)):
+            self.load_uniform(i, 'light.position', self.light._position)
+            self.load_uniform(i, 'light.color', self.light._color)
+            self.load_uniform(i, 'light.ambient_intensity', self.light._ambient_intensity)
+            self.load_uniform(i, 'light.diffuse_intensity', self.light._diffuse_intensity)
+            self.load_uniform(i, 'light.specular_intensity', self.light._specular_intensity)
+            self.load_uniform(i, 'material.surface_brightness', self._models[i].material.surface_brightness)
+            self.load_uniform(i, 'material.ambient_incidence', self._models[i].material.ambient_incidence)
+            self.load_uniform(i, 'material.diffuse_incidence', self._models[i].material.diffuse_incidence)
+            self.load_uniform(i, 'material.specular_incidence', self._models[i].material.specular_incidence)
+            # texture
+            self.load_uniform(i, 'utexture', 0)
+        # send transformation matrices to the CPU
+        self.load_model_matrices()
+        self.load_view_matrices()
+        self.load_projection_matrices()
+        
+    def render(self) -> None:
+        rotation = glm.rotate(0.02, glm.vec3(0, 1, 0))
+        self.load_model_matrices()
+        self.load_view_matrices()
+        for i in range(0, len(self._models)):
+            self._models[i].transform(rotation)
+            self.load_uniform(i, 'camera_position', self._engine.camera.position)
+            self._models[i].render()
+            
 
 
 

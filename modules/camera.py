@@ -9,7 +9,7 @@ SPEED = 0.008
 SENSITIVITY = 0.08
 
 class Camera:
-    def __init__(self, engine, position: tuple[int, int, int] = (0, 0, 4), yaw: float = -90, pitch: float = 0.0) -> None:
+    def __init__(self, engine, position: tuple[float, float, float] = (0, 0, 4), yaw: float = -90, pitch: float = 0.0) -> None:
         self._engine = engine
         self._aspect_ratio = engine.win_size[0] / engine.win_size[1]
         self._default_position =  glm.vec3(position)
@@ -96,8 +96,6 @@ class Camera:
         
     def update_view_matrix(self) -> None:
         self._view_matrix = glm.lookAt(self._position, self._position + self._forward, self._up)
-        print(f'self._position = {self._position}')
-        print(f'self._forward = {self._forward}')
     
     def get_default_projection_matrix(self) -> glm.fmat4x4:
         return glm.perspective(glm.radians(FOV), self._aspect_ratio, NEAR, FAR)

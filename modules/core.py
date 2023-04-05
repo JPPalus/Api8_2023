@@ -20,11 +20,10 @@ class DebugWindow:
         dpg.create_viewport()
         dpg.setup_dearpygui()
 
-        with dpg.window(label="Example Window"):
-            dpg.add_text("Hello world")
-            dpg.add_button(label="Save", callback=save_callback)
-            dpg.add_input_text(label="string")
-            dpg.add_slider_float(label="float")
+        with dpg.window(label = "Camera"):
+            dpg.add_text("Camera controls")
+            dpg.add_button(label = "Reset", callback=save_callback)
+            dpg.add_input_text(label = "string")
 
 
 class GLEngine:
@@ -47,7 +46,7 @@ class GLEngine:
         pg.display.gl_set_attribute(pg.GL_CONTEXT_MAJOR_VERSION, 1)
         pg.display.gl_set_attribute(pg.GL_CONTEXT_PROFILE_MASK, pg.GL_CONTEXT_PROFILE_CORE)
         # create OpenGL context
-        pg.display.set_mode(self._WIN_SIZE, flags = pg.OPENGL | pg.DOUBLEBUF)
+        pg.display.set_mode(self._WIN_SIZE, flags = pg.OPENGL | pg.DOUBLEBUF | pg.RESIZABLE)
         # keeps track of time
         self._clock = pgtime.Clock()
         self._time = 0
@@ -61,8 +60,8 @@ class GLEngine:
         else : 
             self.gl_context.enable_only(moderngl.DEPTH_TEST | moderngl.PROGRAM_POINT_SIZE)
         # mouse settings
-        pgevent.set_grab(True)
         pgmouse.set_visible(False)
+        pgevent.set_grab(self._allow_mouse_controls)
         # background color
         self._gl_context.clear(color=(0.9, 0.8, 0.01)) # "The fact that gold exists makes every other colours equally inferior."
         # camera
@@ -165,6 +164,7 @@ class GLEngine:
         # m : allow / disable mouse camera controls
         if symbol == pg.K_m:
             self._allow_mouse_controls = not self._allow_mouse_controls
+            pgevent.set_grab(self._allow_mouse_controls)
             if self._allow_debug_mode:
                 mouse_controls_state = 'activated' if self._allow_mouse_controls else 'deactivated'
                 print(f'camera controls with mouse {mouse_controls_state}')

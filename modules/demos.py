@@ -1,7 +1,7 @@
 import numpy as np
 import moderngl
 import glm
-from pyglet import image
+import pygame.image as pgimage
 from modules.light import Light
 
 
@@ -238,7 +238,7 @@ class CompanionCube:
         self._shader_program['surface_brightness'] = 56.0 # shiny
         # texture
         self._texture = self.get_texture(path='textures/companion_cube.png')
-        self._shader_program['utexture_0'] = 0 # Define the texture unit we'll use
+        self._shader_program['utexture'] = 0 # Define the texture unit we'll use
         self._texture.use()
         # send transformation matrices to the CPU
         self._shader_program['projection_matrix'].write(self._engine.camera.projection_matrix)
@@ -249,12 +249,13 @@ class CompanionCube:
     def shader_program(self) -> moderngl.Program:
         return self._shader_program
     
-    def get_texture(self, path) -> moderngl.Texture:
-        pic = image.load(path)
-        raw_pic = pic.get_image_data()
-        texture_data = raw_pic.get_data('RGB', raw_pic.width * 3)
-        width, height = pic.width, pic.height
-        texture = self._gl_context.texture(size=(width, height), components=3, data=texture_data)
+    def get_texture(self, path: str) -> moderngl.Texture:
+        raw_pic = pgimage.load(path).convert()
+        size = raw_pic.get_size()
+        texture_data = pgimage.tostring(raw_pic, 'RGB')
+        texture = self._gl_context.texture(size = size, 
+                                           components = 3, 
+                                           data = texture_data)
         return texture
     
     def update(self):
