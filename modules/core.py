@@ -57,8 +57,9 @@ class GLEngine:
         self._scenes: list[Scene] = []
         
         # debug window
-        DebugWindow(self)
-        dpg.show_viewport()
+        if self._allow_debug_mode:
+            DebugWindow(self)
+            dpg.show_viewport()
 
     @property
     def gl_context(self) -> moderngl.Context:
@@ -111,7 +112,7 @@ class GLEngine:
         # swap buffers
         pg.display.flip()
         # dgp
-        if dpg.is_dearpygui_running():
+        if self._allow_debug_mode and dpg.is_dearpygui_running():
             dpg.render_dearpygui_frame()
     
     def event_handler(self) -> None:

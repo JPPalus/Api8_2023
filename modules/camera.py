@@ -124,7 +124,7 @@ class Camera:
         self._view_matrix = self.get_default_view_matrix()
         self._projection_matrix = self.get_default_projection_matrix()
         
-    def move_to_position(self, position: tuple[int, int, int]):
+    def move_to_position(self, position: tuple[float, float, float]):
         self._position = glm.vec3(position)
         self.update_view_matrix()
         
