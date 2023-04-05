@@ -15,7 +15,7 @@ class Camera:
         self._default_position =  glm.vec3(position)
         self._position = copy(self._default_position) # eye, position of the camera
         self._center = glm.vec3(0) # the point where the camera aims
-        self._up = glm.vec3(0) # how the camera is oriented
+        self._up = glm.vec3(0, 1, 0) # how the camera is oriented
         self._right = glm.vec3(1, 0, 0)
         self._forward = glm.vec3(0, 0, -1)
         self._yaw = yaw # lacet
@@ -103,7 +103,7 @@ class Camera:
     def get_default_view_matrix(self) -> glm.fmat4x4:
         return glm.lookAt(self._position, self._center, self._up)
     
-    def look_at_scene(self):
+    def look_at_scene(self): # TODO
         self._view_matrix = glm.lookAt(self._position, self._center, self._up)
     
     def set_null_camera(self) -> None:
@@ -117,7 +117,7 @@ class Camera:
     
     def set_default_camera(self) -> None:
         self._position = copy(self._default_position)
-        self._center = glm.vec3(0)
+        self._center = self._position + self._forward
         self._up = glm.vec3(0, 1, 0)
         self._yaw = -90 
         self._pitch = 0 
@@ -131,8 +131,10 @@ class Camera:
         
     def move_to_position(self, position: tuple[float, float, float]):
         self._position = glm.vec3(position)
+        self.update_camera_vectors()
         self.update_view_matrix()
         
     def reset_camera(self) -> None:
-        self.set_position(self._default_position)
-        
+        self.set_default_camera()
+        self.update_camera_vectors()
+        self.update_view_matrix() 
