@@ -11,19 +11,6 @@ from modules.scene import Scene
 
 
 
-class DebugWindow:
-    def __init__(self) -> None:
-        def save_callback():
-            print("Save Clicked")
-
-        dpg.create_context()
-        dpg.create_viewport()
-        dpg.setup_dearpygui()
-
-        with dpg.window(label = "Camera"):
-            dpg.add_text("Camera controls")
-            dpg.add_button(label = "Reset", callback=save_callback)
-            dpg.add_input_text(label = "string")
 
 
 class GLEngine:
@@ -70,7 +57,7 @@ class GLEngine:
         self._scenes: list[Scene] = []
         
         # debug window
-        DebugWindow()
+        DebugWindow(self)
         dpg.show_viewport()
 
     @property
@@ -208,3 +195,47 @@ class GLEngine:
         dpg.destroy_context()
         pg.quit()
         sys.exit()
+
+
+class DebugWindow:
+    def __init__(self, engine: GLEngine) -> None:
+
+        def save_x_camera(_, new_x):
+            delta = engine._camera._position.x - new_x
+            engine._camera._position.x = new_x
+            engine.set_camera(engine._camera)
+            if delta > 0:
+                engine._camera.move("left", delta)
+            else:
+                engine._camera.move("right", delta)
+            print("camera x =", engine._camera._position.x)
+
+        def save_y_camera(_, new_y):
+            delta = engine._camera._position.y - new_y
+            engine._camera._position.y = new_y
+            engine.set_camera(engine._camera)
+            if delta > 0:
+                engine._camera.move("up", delta)
+            else:
+                engine._camera.move("down", delta)
+            print("camera y =", engine._camera._position.y)
+
+        def save_z_camera(_, new_z):
+            delta = engine._camera._position.z - new_z
+            engine._camera._position.z = new_z
+            engine.set_camera(engine._camera)
+            if delta > 0:
+                engine._camera.move("backward", delta)
+            else:
+                engine._camera.move("forward", delta)
+            print("camera z =", engine._camera._position.z)            
+
+
+        dpg.create_context()
+        dpg.create_viewport(title="Debug window", width=500, height=350)
+        dpg.setup_dearpygui()
+        
+        with dpg.window(label="Camera", autosize=True):
+            dpg.add_slider_int(label="X", default_value=int(engine.camera.position.x), min_value=-5, max_value=5, callback=save_x_camera)
+            dpg.add_slider_int(label="Y", default_value=int(engine.camera.position.y), min_value=-5, max_value=5, callback=save_y_camera)
+            dpg.add_slider_int(label="Z", default_value=int(engine.camera.position.z), min_value=-5, max_value=15, callback=save_z_camera)
