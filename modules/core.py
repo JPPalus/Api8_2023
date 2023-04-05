@@ -199,43 +199,40 @@ class GLEngine:
 
 class DebugWindow:
     def __init__(self, engine: GLEngine) -> None:
-
-        def save_x_camera(_, new_x):
-            delta = engine._camera._position.x - new_x
-            engine._camera._position.x = new_x
-            engine.set_camera(engine._camera)
-            if delta > 0:
-                engine._camera.move("left", delta)
-            else:
-                engine._camera.move("right", delta)
-            print("camera x =", engine._camera._position.x)
-
-        def save_y_camera(_, new_y):
-            delta = engine._camera._position.y - new_y
-            engine._camera._position.y = new_y
-            engine.set_camera(engine._camera)
-            if delta > 0:
-                engine._camera.move("up", delta)
-            else:
-                engine._camera.move("down", delta)
-            print("camera y =", engine._camera._position.y)
-
-        def save_z_camera(_, new_z):
-            delta = engine._camera._position.z - new_z
-            engine._camera._position.z = new_z
-            engine.set_camera(engine._camera)
-            if delta > 0:
-                engine._camera.move("backward", delta)
-            else:
-                engine._camera.move("forward", delta)
-            print("camera z =", engine._camera._position.z)            
-
-
+        self._camera = engine.camera
+        
         dpg.create_context()
-        dpg.create_viewport(title="Debug window", width=500, height=350)
+        dpg.create_viewport(title = "Debug window", width = 500, height = 350)
         dpg.setup_dearpygui()
         
-        with dpg.window(label="Camera", autosize=True):
-            dpg.add_slider_int(label="X", default_value=int(engine.camera.position.x), min_value=-5, max_value=5, callback=save_x_camera)
-            dpg.add_slider_int(label="Y", default_value=int(engine.camera.position.y), min_value=-5, max_value=5, callback=save_y_camera)
-            dpg.add_slider_int(label="Z", default_value=int(engine.camera.position.z), min_value=-5, max_value=15, callback=save_z_camera)
+        with dpg.window(label = "Camera", autosize = True):
+            dpg.add_slider_int(label = "X", 
+                               default_value = int(self._camera.position.x), 
+                               min_value = -5, 
+                               max_value = 5, 
+                               callback = self.set_camera_position)
+            dpg.add_slider_int(label = "Y", 
+                               default_value = int(self._camera.position.y), 
+                               min_value = -5, 
+                               max_value = 5, 
+                               callback = self.set_camera_position)
+            dpg.add_slider_int(label = "Z", 
+                               default_value = int(self._camera.position.z), 
+                               min_value = -5, 
+                               max_value = 15, 
+                               callback = self.set_camera_position)
+    
+    def set_camera_position(self, sender, value) -> None:
+        axe = dpg.get_item_label(sender)
+        if axe == 'X':
+            self._camera.move_to_position((value,
+                                           self._camera.position.y, 
+                                           self._camera.position.z))
+        elif axe == 'Y':
+            self._camera.move_to_position((self._camera.position.x,
+                                           value, 
+                                           self._camera.position.z))
+        elif axe == 'Z':
+            self._camera.move_to_position((self._camera.position.x,
+                                           self._camera.position.y, 
+                                           value))
