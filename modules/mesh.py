@@ -34,7 +34,7 @@ class TexturedCubeMesh(Mesh):
         
         vertex_data = self.get_vertices_from_surface(vertex, surfaces) # 32-bit floating-point
         
-        tex_coord =  ((0, 0), (1, 0), (1, 1), (0, 1))
+        tex_coord = ((0, 1), (1, 1), (1, 0), (0, 0))
         
         tex_coord_indices = [(0, 2, 3), (0, 1, 2), 
                              (0, 2, 3), (0, 1, 2),
@@ -78,7 +78,7 @@ class SolidCubeMesh(Mesh):
         vertex_data = self.get_vertices_from_surface(vertex, surfaces) # 32-bit floating-point
         
         vertex_color = [(0, 1, 1), (0, 0, 1), (0, 0, 0), (0, 1, 0),
-                      (1, 1, 0), (1, 1, 1), (1, 0, 1), (1, 0, 0)]
+                        (1, 1, 0), (1, 1, 1), (1, 0, 1), (1, 0, 0)]
         
         vertex_color_data = self.get_vertices_from_surface(vertex_color, surfaces) # 32-bit floating-point
         

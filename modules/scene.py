@@ -166,7 +166,7 @@ class TestingField(Scene):
         self.load_model_matrices()
         self.load_view_matrices()
         for i in range(0, len(self._models)):
-            self._models[i].transform(rotation)
+            # self._models[i].transform(rotation)
             self.load_uniform(i, 'camera_position', self._engine.camera.position)
             self._models[i].render()
             
