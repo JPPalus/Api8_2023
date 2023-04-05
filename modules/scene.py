@@ -31,7 +31,7 @@ class Scene:
     def light(self) -> Light:
         return self._light
     
-    def get_default_light(self) -> Light:
+    def set_default_light(self) -> Light:
         return Light()
     
     def set_models(self, models: list[Model]) -> None:
@@ -102,7 +102,7 @@ class CompanionCube(Scene):
         # model
         self._models = [CompanionCubeModel(engine)]
         # light
-        self._light = self.get_default_light()
+        self._light = self.set_default_light()
         self.load_uniform(0, 'light.position', self.light._position)
         self.load_uniform(0, 'light.color', self.light._color)
         self.load_uniform(0, 'light.ambient_intensity', self.light._ambient_intensity)
@@ -132,9 +132,19 @@ class TestingField(Scene):
         # model
         self._models = [CompanionCubeModel(engine),
                         GoldenBoxModel(engine, position = (-3.5, 0, 0)),
-                        WoodenBoxModel(engine, position = (3.5, 0, 0))]
+                        WoodenBoxModel(engine, position = (3.5, 0, 0)),
+                        MetalBoxModel(engine, position = (-3.5, 3.5, 0)),
+                        TexturedCubeModel(engine, position = (0, 3.5, 0)),
+                        TexturedCubeModel(engine, position = (3.5, 3.5, 0))]
         # light
-        self._light = self.get_default_light()
+        self._light = self.set_default_light()
+        self._light.set_position((-5, 3, 9))
+        # camera
+        self._engine.camera.set_position((0, 2, 9))
+        # textures
+        self._models[4].material.set_default_material('pearl')
+        self._models[5].material.set_default_material('yellow_plastic')
+        # uniforms
         for i in range(0, len(self._models)):
             self.load_uniform(i, 'light.position', self.light._position)
             self.load_uniform(i, 'light.color', self.light._color)
@@ -145,7 +155,6 @@ class TestingField(Scene):
             self.load_uniform(i, 'material.ambient_incidence', self._models[i].material.ambient_incidence)
             self.load_uniform(i, 'material.diffuse_incidence', self._models[i].material.diffuse_incidence)
             self.load_uniform(i, 'material.specular_incidence', self._models[i].material.specular_incidence)
-            # texture
             self.load_uniform(i, 'utexture', 0)
         # send transformation matrices to the CPU
         self.load_model_matrices()

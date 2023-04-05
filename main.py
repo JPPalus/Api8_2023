@@ -17,6 +17,7 @@ if __name__ == '__main__':
     
     # scenes = [scene.CompanionCube(demo)]
     # scenes = [scene.TestCube(demo)]
+    
     scenes = [scene.TestingField(demo)]
     demo.set_scenes(scenes)
 
