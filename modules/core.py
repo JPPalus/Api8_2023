@@ -174,12 +174,16 @@ class GLEngine:
             self._camera.move("straf_down", self._delta_time)
         if keys[pg.K_RIGHT]:
             self._camera.move("right", self._delta_time)
+            dpg.set_value("X camera value", self._camera._yaw)
         if keys[pg.K_LEFT]:
             self._camera.move("left", self._delta_time)
+            dpg.set_value("X camera value", self._camera._yaw)
         if keys[pg.K_UP]:
             self._camera.move("up", self._delta_time)
+            dpg.set_value("Y camera value", self._camera._pitch)
         if keys[pg.K_DOWN]:
             self._camera.move("down", self._delta_time)
+            dpg.set_value("Y camera value", self._camera._pitch)
             
     def on_mouse_motion(self) -> None:
         x, y = pgmouse.get_pos()
@@ -206,22 +210,30 @@ class DebugWindow:
         dpg.create_viewport(title = "Debug window", width = 500, height = 350)
         dpg.setup_dearpygui()
         
+        with dpg.value_registry():
+            dpg.add_float_value(tag = "X camera value")
+            dpg.add_float_value(tag = "Y camera value")
+            dpg.add_float_value(tag = "Z camera value")
+
         with dpg.window(label = "Camera", autosize = True):
-            dpg.add_slider_int(label = "X", 
-                               default_value = int(self._camera.position.x), 
+            dpg.add_input_float(label = "X", 
+                               default_value = self._camera._yaw, 
                                min_value = -5, 
                                max_value = 5, 
-                               callback = self.set_camera_position)
-            dpg.add_slider_int(label = "Y", 
-                               default_value = int(self._camera.position.y), 
+                               callback = self.set_camera_position,
+                               source = "X camera value")
+            dpg.add_input_float(label = "Y", 
+                               default_value = self._camera._pitch, 
                                min_value = -5, 
                                max_value = 5, 
-                               callback = self.set_camera_position)
-            dpg.add_slider_int(label = "Z", 
-                               default_value = int(self._camera.position.z), 
+                               callback = self.set_camera_position,
+                               source = "Y camera value")
+            dpg.add_input_float(label = "Z", 
+                               default_value = self._camera.position.z, 
                                min_value = -5, 
                                max_value = 15, 
-                               callback = self.set_camera_position)
+                               callback = self.set_camera_position,
+                               source = "Z camera value")
     
     def set_camera_position(self, sender, value) -> None:
         axe = dpg.get_item_label(sender)
