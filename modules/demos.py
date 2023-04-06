@@ -1,6 +1,6 @@
 import numpy as np
 import moderngl
-import glm
+import modules.glmath as glmath
 import pygame.image as pgimage
 from modules.light import Light
 
@@ -73,7 +73,7 @@ class TestCube:
         return self._shader_program
     
     def update(self) -> None:
-        self._model_matrix = glm.rotate(self._model_matrix, 0.02, glm.vec3(0, 1, 0))
+        self._model_matrix = glmath.rotate(self._model_matrix, 0.02, glmath.vec3f(0, 1, 0))
         # update the position of the model
         self._shader_program['model_matrix'].write(self._model_matrix)
         # update the position of the camera
@@ -117,8 +117,8 @@ class TestCube:
         return np.array(data, dtype='f4')
     
     @staticmethod
-    def get_identity_matrix() -> glm.fmat4x4:
-        return glm.identity(glm.fmat4x4)
+    def get_identity_matrix() -> glmath.mat4x4f:
+        return glmath.identity_matrix(glmath.mat4x4f)
 
     def get_vao(self) -> moderngl.VertexArray:
         vao = self._gl_context.vertex_array(self._shader_program, 
@@ -159,7 +159,7 @@ class SkeletonCube:
         return self._shader_program
     
     def update(self) -> None:
-        self._model_matrix = glm.rotate(self._model_matrix, 0.02, glm.vec3(0, 1, 0))
+        self._model_matrix = glmath.rotate(self._model_matrix, 0.02, glmath.vec3f(0, 1, 0))
         # update the position of the model
         self._shader_program['model_matrix'].write(self._model_matrix)
         # update the position of the camera
@@ -195,8 +195,8 @@ class SkeletonCube:
         return np.array(data, dtype='f4')
     
     @staticmethod
-    def get_identity_matrix() -> glm.fmat4x4:
-        return glm.identity(glm.fmat4x4)
+    def get_identity_matrix() -> glmath.mat4x4f:
+        return glmath.identity_matrix(glmath.mat4x4f)
 
     def get_vao(self) -> moderngl.VertexArray:
         vao = self._gl_context.vertex_array(self._shader_program, 
@@ -259,7 +259,7 @@ class CompanionCube:
         return texture
     
     def update(self):
-        self._model_matrix *= glm.rotate(0.02, glm.vec3(0, 1, 0))
+        self._model_matrix *= glmath.rotate(0.02, glmath.vec3f(0, 1, 0))
         # update the position of the model
         self._shader_program['model_matrix'].write(self._model_matrix)
         # update the position of the camera
@@ -321,8 +321,8 @@ class CompanionCube:
         return np.array(data, dtype='f4')
     
     @staticmethod
-    def get_identity_matrix() -> glm.fmat4x4:
-        return glm.identity(glm.fmat4x4)
+    def get_identity_matrix() -> glmath.mat4x4f:
+        return glmath.identity_matrix(glmath.mat4x4f)
 
     def get_vao(self) -> moderngl.VertexArray:
         vao = self._gl_context.vertex_array(self._shader_program, 
