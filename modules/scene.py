@@ -1,9 +1,8 @@
-import glm
 import moderngl
+import modules.glmath as glmath
 from typing import Any
 from modules.light import Light
 from modules.model import (
-    Texture, 
     Model, 
     CompanionCubeModel,
     TexturedCubeModel,
@@ -87,7 +86,7 @@ class TestCube(Scene):
         self.load_projection_matrices()
             
     def render(self) -> None:
-        rotation = glm.rotate(0.02, glm.vec3(0, 1, 0))
+        rotation = glmath.rotate(0.02, glmath.vec3f(0, 1, 0))
         self._models[0].transform(rotation)
         self._models[1].transform(rotation)
         self.load_model_matrices()
@@ -117,7 +116,7 @@ class CompanionCube(Scene):
         self.load_projection_matrices()
         
     def render(self) -> None:
-        rotation = glm.rotate(0.02, glm.vec3(0, 1, 0))
+        rotation = glmath.rotate(0.02, glmath.vec3f(0, 1, 0))
         for model in self._models:
             model.transform(rotation)
             self.load_model_matrices()
@@ -162,11 +161,11 @@ class TestingField(Scene):
         self.load_projection_matrices()
         
     def render(self) -> None:
-        rotation = glm.rotate(0.02, glm.vec3(0, 1, 0))
+        rotation = glmath.rotate(0.02, glmath.vec3f(0, 1, 0))
         self.load_model_matrices()
         self.load_view_matrices()
         for i in range(0, len(self._models)):
-            # self._models[i].transform(rotation)
+            self._models[i].transform(rotation)
             self.load_uniform(i, 'camera_position', self._engine.camera.position)
             self._models[i].render()
             

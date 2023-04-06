@@ -11,8 +11,6 @@ from modules.scene import Scene
 
 
 
-
-
 class GLEngine:
     def __init__(self, win_size: tuple[int, int] = (1280, 720), 
                  fps: int = 60, 
@@ -57,9 +55,9 @@ class GLEngine:
         self._scenes: list[Scene] = []
         
         # debug window
+        self._debug_window = DebugWindow(self)
         if self._allow_debug_mode:
-            DebugWindow(self)
-            dpg.show_viewport()
+            self._debug_window.run()
 
     @property
     def gl_context(self) -> moderngl.Context:
@@ -105,7 +103,7 @@ class GLEngine:
 
     def render(self) -> None:
         # clear the framebuffer
-        self._gl_context.clear(color=(0.9, 0.8, 0.01)) # "The fact that gold exists makes every other colours equally inferior." Big E.
+        self._gl_context.clear(color=(0.9, 0.8, 0.01)) # 'The fact that gold exists makes every other colours equally inferior.' Big E.
         # render the scene
         for scene in self._scenes:
             scene.render()
@@ -134,7 +132,6 @@ class GLEngine:
             self._allow_debug_mode = not self._allow_debug_mode
             debug_state = 'activated' if self._allow_debug_mode else 'deactivated'
             print(f'debug mode {debug_state}')   
-        # k : activate / deactivate wire mode
         if symbol == pg.K_k:
             self._allow_wire_mode = not self._allow_wire_mode
             self._gl_context.wireframe = self._allow_wire_mode
@@ -161,28 +158,28 @@ class GLEngine:
         keys = pg.key.get_pressed()
         # move controls
         if keys[pg.K_z]:
-            self._camera.move("forward", self._delta_time)
+            self._camera.move('forward', self._delta_time)
         if keys[pg.K_s]:
-            self._camera.move("backward", self._delta_time)
+            self._camera.move('backward', self._delta_time)
         if keys[pg.K_q]:
-            self._camera.move("straf_left", self._delta_time)
+            self._camera.move('straf_left', self._delta_time)
         if keys[pg.K_d]:
-            self._camera.move("straf_right", self._delta_time)
+            self._camera.move('straf_right', self._delta_time)
         if keys[pg.K_a]:
-            self._camera.move("straf_up", self._delta_time)
+            self._camera.move('straf_up', self._delta_time)
         if keys[pg.K_e]:
-            self._camera.move("straf_down", self._delta_time)
+            self._camera.move('straf_down', self._delta_time)
         if keys[pg.K_RIGHT]:
-            self._camera.move("right", self._delta_time)
+            self._camera.move('right', self._delta_time)
             dpg.set_value("X camera value", self._camera._yaw)
         if keys[pg.K_LEFT]:
-            self._camera.move("left", self._delta_time)
+            self._camera.move('left', self._delta_time)
             dpg.set_value("X camera value", self._camera._yaw)
         if keys[pg.K_UP]:
-            self._camera.move("up", self._delta_time)
+            self._camera.move('up', self._delta_time)
             dpg.set_value("Y camera value", self._camera._pitch)
         if keys[pg.K_DOWN]:
-            self._camera.move("down", self._delta_time)
+            self._camera.move('down', self._delta_time)
             dpg.set_value("Y camera value", self._camera._pitch)
             
     def on_mouse_motion(self) -> None:
@@ -197,8 +194,8 @@ class GLEngine:
     def on_close(self) -> None:
         for scene in self._scenes:
             scene.destroy()
-        dpg.destroy_context()
         pg.quit()
+        self._debug_window.close()
         sys.exit()
 
 
@@ -207,7 +204,7 @@ class DebugWindow:
         self._camera = engine.camera
         
         dpg.create_context()
-        dpg.create_viewport(title = "Debug window", width = 500, height = 350)
+        dpg.create_viewport(title = 'Debug window', width = 500, height = 350)
         dpg.setup_dearpygui()
         
         with dpg.value_registry():
@@ -215,26 +212,28 @@ class DebugWindow:
             dpg.add_float_value(tag = "Y camera value")
             dpg.add_float_value(tag = "Z camera value")
 
-        with dpg.window(label = "Camera", autosize = True):
-            dpg.add_input_float(label = "X", 
+        with dpg.window(label = 'Camera', autosize = True, tag = 'Primary Window'):
+            dpg.add_input_float(label = 'X', 
                                default_value = self._camera._yaw, 
                                min_value = -5, 
                                max_value = 5, 
                                callback = self.set_camera_position,
                                source = "X camera value")
-            dpg.add_input_float(label = "Y", 
+            dpg.add_input_float(label = 'Y', 
                                default_value = self._camera._pitch, 
                                min_value = -5, 
                                max_value = 5, 
                                callback = self.set_camera_position,
                                source = "Y camera value")
-            dpg.add_input_float(label = "Z", 
+            dpg.add_input_float(label = 'Z', 
                                default_value = self._camera.position.z, 
                                min_value = -5, 
                                max_value = 15, 
                                callback = self.set_camera_position,
                                source = "Z camera value")
-    
+            
+        dpg.set_primary_window('Primary Window', True)
+        
     def set_camera_position(self, sender, value) -> None:
         axe = dpg.get_item_label(sender)
         if axe == 'X':
@@ -249,3 +248,13 @@ class DebugWindow:
             self._camera.move_to_position((self._camera.position.x,
                                            self._camera.position.y, 
                                            value))
+            
+    def run(self) -> None:
+        dpg.show_viewport()
+            
+    def close(self) -> None:
+        dpg.destroy_context()
+        dpg.hi
+        # dpg.stop_dearpygui()
+        
+
